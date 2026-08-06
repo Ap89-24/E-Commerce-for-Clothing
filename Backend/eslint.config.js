@@ -1,13 +1,13 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import eslintConfigPrettier from 'eslint-config-prettier';
-import eslintPluginPrettier from 'eslint-plugin-prettier';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import js from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+import eslintConfigPrettier from "eslint-config-prettier";
+import eslintPluginPrettier from "eslint-plugin-prettier";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
 
 export default tseslint.config(
   {
-    ignores: ['node_modules', 'dist', 'coverage'],
+    ignores: ["node_modules", "dist", "coverage"],
   },
 
   js.configs.recommended,
@@ -15,7 +15,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
 
   {
-    files: ['**/*.ts'],
+    files: ["**/*.ts"],
 
     languageOptions: {
       globals: {
@@ -23,35 +23,35 @@ export default tseslint.config(
       },
 
       parserOptions: {
-        project: './tsconfig.json',
+        project: "./tsconfig.json",
         tsconfigRootDir: import.meta.dirname,
       },
     },
 
     plugins: {
       prettier: eslintPluginPrettier,
-      'simple-import-sort': simpleImportSort,
+      "simple-import-sort": simpleImportSort,
     },
 
     rules: {
       // Show prettier issues inside ESLint
-      'prettier/prettier': 'error',
+      "prettier/prettier": "error",
 
       // TypeScript
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
         {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
         },
       ],
 
-      '@typescript-eslint/no-explicit-any': 'warn',
+      "@typescript-eslint/no-explicit-any": "warn",
 
       // Node backend
-      'no-console': 'off',
-      'simple-import-sort/imports': 'error',
-      'simple-import-sort/exports': 'error',
+      "no-console": "off",
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
     },
   },
 

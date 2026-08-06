@@ -2,9 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch server.ts",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
     "format": "prettier . --write",
@@ -12,7 +13,7 @@
     "type-check": "tsc --noEmit",
     "prepare": "husky"
   },
-    "lint-staged": {
+  "lint-staged": {
     "*.{js,ts,jsx,tsx,json,css,scss,md}": [
       "prettier --write",
       "eslint --fix"
@@ -43,6 +44,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "tsx": "^4.23.9",
     "typescript": "^7.0.2",
     "typescript-eslint": "^8.66.0"
