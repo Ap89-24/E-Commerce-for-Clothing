@@ -1,1 +1,12 @@
-npm test
+#!/usr/bin/env sh
+
+echo "🔍 Running TypeScript type check..."
+npm run type-check || exit 1
+
+echo "🧹 Running ESLint..."
+npm run lint || exit 1
+
+echo "✨ Formatting staged files..."
+npx lint-staged || exit 1
+
+echo "✅ Pre-commit checks passed!"
