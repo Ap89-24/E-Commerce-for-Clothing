@@ -5,16 +5,18 @@ import { config } from "../types/config.js";
 
 
 
-const sendTokenResponse = async (user: IUser, res: Response) => {
+const sendTokenResponse = async (user: IUser, res: Response , message: string) => {
     const token = jwt.sign({
         id: user._id,
     }, config.JWT_SECRET,
         { expiresIn: "3d" }
     );
 
+    res.cookie("token", token);
+
     res.status(200).json({
-        message: "Token created successfully",
-        token,
+        message: message,
+        success: true,
         user: {
             id: user._id,
             fullName: user.fullName,
@@ -43,6 +45,15 @@ export const registerUser = async (req: Request , res: Response) => {
                 message: "User with this email or contact already exsists"
             });
         };
+
+        const user = await UserModel.create({
+            email,
+            fullName,
+            contact,
+            password
+        });
+
+        await sendTokenResponse(user, res, "User registered successfully");
 
     } catch (error) {
         console.error(error);
