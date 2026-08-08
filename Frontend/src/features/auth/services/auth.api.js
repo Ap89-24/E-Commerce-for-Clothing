@@ -27,3 +27,17 @@ export const register = async ({
         throw error;
     }
 };
+
+export const login = async ({ email, password }) => { 
+    try {
+        const response = await authApiInstance.post("/login", {
+            email,
+            password
+        });
+
+        return response.data;
+    } catch (error) {
+         console.error("Error in login", error);
+        throw error;
+    }
+};

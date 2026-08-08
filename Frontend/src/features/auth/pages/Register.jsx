@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useAuthActions } from '../hooks/useAuth';
+
 
 const Input = ({ label, id, type, value, onChange, onBlur, error, touched, rightElement }) => {
   return (
@@ -48,6 +49,7 @@ const Input = ({ label, id, type, value, onChange, onBlur, error, touched, right
 
 const Register = () => {
   const { handleRegister } = useAuthActions();
+  const navigate = useNavigate();
   const { loading, error: apiError, user } = useSelector((state) => state.auth);
 
   // Form State
@@ -173,6 +175,9 @@ const Register = () => {
         contact: formData.contact,
         isSeller: formData.isSeller
       });
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
     } catch (err) {
       // Errors are already handled in Redux and synced via useEffect
       console.error("Registration failed", err);
