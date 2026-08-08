@@ -15,6 +15,7 @@ export const useAuthActions = () => {
         isSeller = false
     }) => { 
         try {
+            dispatch(setLoading(true));
             const data = await register({
                 email,
                 fullName,
