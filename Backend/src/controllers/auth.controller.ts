@@ -30,7 +30,7 @@ const sendTokenResponse = async (user: IUser, res: Response , message: string) =
 
 
 export const registerUser = async (req: Request , res: Response) => {
-    const { fullName, email, password, contact , isSeller } = req.body;
+    const { fullName, email, password, contact, isSeller } = req.body;
 
     try {
         const exsistingUser = await UserModel.findOne({
@@ -59,5 +59,24 @@ export const registerUser = async (req: Request , res: Response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error registering user" });
+    }
+};
+
+export const loginUser = async (req: Request, res: Response) => { 
+    const { email, password } = req.body;
+
+    try {
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        };
+        const isPassMatch = await user.comparePassword(password);
+        if (!isPassMatch) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        };
+        
+        await sendTokenResponse(user, res, "User Logged In Successfully");
+    } catch (error) {
+        
     }
 };
