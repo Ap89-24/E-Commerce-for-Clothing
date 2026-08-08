@@ -20,6 +20,7 @@ export const validateRegisterUser = [
     body("email").isEmail().withMessage("Invalid email address"),
     body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
     body("contact").notEmpty().matches(/^\d{10}$/).withMessage("Contact must be a valid 10-digit number"),
+    body("isSeller").isBoolean().withMessage("isSeller must be a boolean value"),
 
     validateResult,
 ]

@@ -30,7 +30,7 @@ const sendTokenResponse = async (user: IUser, res: Response , message: string) =
 
 
 export const registerUser = async (req: Request , res: Response) => {
-    const { fullName, email, password, contact } = req.body;
+    const { fullName, email, password, contact , isSeller } = req.body;
 
     try {
         const exsistingUser = await UserModel.findOne({
@@ -50,7 +50,8 @@ export const registerUser = async (req: Request , res: Response) => {
             email,
             fullName,
             contact,
-            password
+            password,
+            role: isSeller ? "SELLER" : "USER"
         });
 
         await sendTokenResponse(user, res, "User registered successfully");
