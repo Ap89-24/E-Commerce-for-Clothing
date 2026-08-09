@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateLoginUser, validateRegisterUser } from "../validators/auth.validator.js";
-import { loginUser, registerUser } from "../controllers/auth.controller.js";
+import { googleCallback, loginUser, registerUser } from "../controllers/auth.controller.js";
 import passport from "passport";
 
 
@@ -27,14 +27,14 @@ authRouter.post("/login", validateLoginUser, loginUser);
 @route -> GET /api/auth/google
 @access -> Public
  */
-authRouter.get("/auth/google", passport.authenticate("google", { scope: ["profile" , "email"] }));
+authRouter.get("/google", passport.authenticate("google", { scope: ["profile" , "email"] }));
 
 /**
 @description -> Handle Google OAuth callback and log in the user
 @route -> GET /api/auth/google/callback
 @access -> Public
  */
-authRouter.get("/auth/google/callback", passport.authenticate("google", { session: false }));
+authRouter.get("/google/callback", passport.authenticate("google", { session: false }) , googleCallback);
 
 
 export default authRouter;

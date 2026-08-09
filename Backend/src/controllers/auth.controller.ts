@@ -80,3 +80,9 @@ export const loginUser = async (req: Request, res: Response) => {
         
     }
 };
+
+
+export const googleCallback = async (req: Request, res: Response) => { 
+    console.log(req.user);
+    return res.redirect("http://localhost:5173/")
+};
