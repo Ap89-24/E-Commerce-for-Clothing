@@ -8,12 +8,12 @@ import cors from "cors";
 const app = expess();
 app.use(expess.json());
 app.use(expess.urlencoded({ extended: true }));
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: true,
+//     credentials: true,
+//   })
+// );
 app.use(cookieParser());
 app.use(morgan("dev"));
 
