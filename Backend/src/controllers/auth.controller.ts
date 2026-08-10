@@ -83,6 +83,12 @@ export const loginUser = async (req: Request, res: Response) => {
 
 
 export const googleCallback = async (req: Request, res: Response) => { 
-    console.log(req.user);
+      if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: "User not authenticated",
+    });
+  }
+    const { id , displayName , emails , photos} = req.user;
     return res.redirect("http://localhost:5173/")
 };
