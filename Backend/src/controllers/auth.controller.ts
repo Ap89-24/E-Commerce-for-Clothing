@@ -1,6 +1,7 @@
-import { UserModel, type IUser } from "../models/user.model.js";
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+
+import { type IUser, UserModel } from "../models/user.model.js";
 import { config } from "../types/config.js";
 
 const sendTokenResponse = async (
@@ -105,8 +106,8 @@ export const googleCallback = async (req: Request, res: Response) => {
     }
     const { id, displayName, emails, photos } = req.user;
 
-    const email = emails[0]?.value;
-    const profilePic = photos[0]?.value;
+    const email = emails?.[0]?.value;
+    const profilePic = photos?.[0]?.value;
 
     if (!email) {
       return res.status(400).json({

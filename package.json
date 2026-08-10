@@ -1,0 +1,24 @@
+{
+  "name": "e-commerce-for-clothes",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ap89-24/E-Commerce-for-Clothing.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ap89-24/E-Commerce-for-Clothing/issues"
+  },
+  "homepage": "https://github.com/Ap89-24/E-Commerce-for-Clothing#readme",
+  "description": "",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}

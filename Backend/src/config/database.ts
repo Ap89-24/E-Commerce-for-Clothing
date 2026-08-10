@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 import { config } from "../types/config.js";
 
 const connectToDatabase = async () => {

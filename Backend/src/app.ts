@@ -1,10 +1,11 @@
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import expess from "express";
 import morgan from "morgan";
-import authRouter from "./routes/auth.route.js";
-import cors from "cors";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+
+import authRouter from "./routes/auth.route.js";
 import { config } from "./types/config.js";
 
 const app = expess();
@@ -28,7 +29,7 @@ passport.use(
       callbackURL: config.GOOGLE_CALLBACK_URL,
     },
     (accessToken, refreshToken, profile, done) => {
-      return done(null, profile);
+      return done(null, profile as Express.User);
     }
   )
 );

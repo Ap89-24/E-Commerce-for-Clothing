@@ -1,5 +1,6 @@
-import jwt from "jsonwebtoken";
 import type { NextFunction, Response } from "express";
+import jwt from "jsonwebtoken";
+
 import type { AuthRequest } from "../interfaces/auth-request.interface.js";
 import { UserModel } from "../models/user.model.js";
 import { config } from "../types/config.js";
@@ -36,7 +37,7 @@ export const isAuthenticated = async (req: AuthRequest, res: Response, next: Nex
     req.currentUser = user;
 
     next();
-  } catch (error) {
+  } catch {
     return res.status(401).json({
       success: false,
       message: "Invalid or expired token.",

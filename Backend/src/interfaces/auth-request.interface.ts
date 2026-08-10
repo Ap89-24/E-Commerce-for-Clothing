@@ -1,4 +1,5 @@
 import type { Request } from "express";
+
 import type { IUser } from "../models/user.model.js";
 
 export interface AuthRequest extends Request {

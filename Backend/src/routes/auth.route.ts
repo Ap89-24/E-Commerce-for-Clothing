@@ -1,13 +1,14 @@
 import { Router } from "express";
-import { validateLoginUser, validateRegisterUser } from "../validators/auth.validator.js";
+import passport from "passport";
+
 import {
   completeProfile,
   googleCallback,
   loginUser,
   registerUser,
 } from "../controllers/auth.controller.js";
-import passport from "passport";
 import { isAuthenticated } from "../middleware/auth.middleware.js";
+import { validateLoginUser, validateRegisterUser } from "../validators/auth.validator.js";
 
 const authRouter = Router();
 

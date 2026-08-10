@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { Schema, model, Document } from "mongoose";
+import { Document, model, Schema } from "mongoose";
 export interface IUser extends Document {
   fullName: string;
   email: string;
@@ -7,7 +7,7 @@ export interface IUser extends Document {
   contact?: string;
   role: "USER" | "SELLER";
   googleId?: string;
-  profile?: string;
+  profile: string;
   isProfileCompleted: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }

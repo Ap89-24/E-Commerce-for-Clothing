@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+import type { Profile } from "passport-google-oauth20";
+
 import { IGoogleUser } from "../interfaces/google-user.interface.ts";
 import type { IUser } from "../models/user.model.ts";
 
@@ -27,6 +30,7 @@ declare global {
     interface Request {
       currentUser?: IUser;
     }
+    interface User extends Profile {}
   }
 }
 

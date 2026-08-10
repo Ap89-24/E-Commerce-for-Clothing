@@ -43,7 +43,7 @@ export interface IGoogleUser {
    * @description List of profile photos provided by Google.
    * Usually contains a single profile picture.
    */
-  photos: {
+  photos?: {
     /**
      * @description URL of the user's profile picture.
      * Example:

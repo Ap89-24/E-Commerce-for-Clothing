@@ -1,4 +1,5 @@
 import type { NextFunction, Response } from "express";
+
 import type { AuthRequest } from "../interfaces/auth-request.interface.js";
 import { UserModel } from "../models/user.model.js";
 
@@ -26,7 +27,7 @@ export const isProfileCompleted = async (req: AuthRequest, res: Response, next: 
     }
 
     next();
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       success: false,
       message: "Internal server error.",
