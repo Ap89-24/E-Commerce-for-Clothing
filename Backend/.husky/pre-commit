@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 
+echo "HOOK IS RUNNING"
+
+exit 1
+
 echo "🔍 Running TypeScript type check..."
 npm run type-check || exit 1
 
@@ -10,7 +14,3 @@ echo "✨ Formatting staged files..."
 npx lint-staged || exit 1
 
 echo "✅ Pre-commit checks passed!"
-
-echo "PRE-COMMIT IS RUNNING"
-
-exit 1
