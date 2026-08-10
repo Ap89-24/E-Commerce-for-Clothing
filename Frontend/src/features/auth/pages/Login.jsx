@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router';
 import { useAuthActions } from '../hooks/useAuth';
+import ContinueWithGoogle from '../components/ContinueWithGoogle';
 
 const Input = ({ label, id, type, value, onChange, onBlur, error, touched, rightElement }) => {
   return (
@@ -305,6 +306,7 @@ const Login = () => {
                       </button>
                     }
                   />
+                  <ContinueWithGoogle />
 
                   {/* Actions */}
                   <div className="space-y-4 pt-4">
