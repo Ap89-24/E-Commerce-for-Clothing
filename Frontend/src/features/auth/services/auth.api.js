@@ -41,3 +41,18 @@ export const login = async ({ email, password }) => {
         throw error;
     }
 };
+
+
+export const completeProfile = async ({ contact, role }) => {
+  try {
+    const response = await authApiInstance.patch("/complete-profile", {
+      contact,
+      role,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error completing profile", error);
+    throw error;
+  }
+}

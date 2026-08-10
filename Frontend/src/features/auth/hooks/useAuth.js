@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { login, register } from "../services/auth.api.js";
+import { completeProfile, login, register } from "../services/auth.api.js";
 import { setUser, setError, setLoading } from "../state/auth.slice.js";
 import { useCallback } from "react";
 
@@ -54,9 +54,38 @@ export const useAuthActions = () => {
         }
     }, [dispatch]);
 
+     const handleCompleteProfile = useCallback(
+    async ({ contact, role }) => {
+      try {
+        dispatch(setLoading(true));
+
+        const data = await completeProfile({
+          contact,
+          role,
+        });
+
+        dispatch(setUser(data.user));
+        dispatch(setError(null));
+
+        return data;
+      } catch (error) {
+        const message =
+          error?.response?.data?.message ||
+          error.message ||
+          "Failed to complete profile";
+
+        dispatch(setError(message));
+        throw error;
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
     return {
         handleRegister,
-        handleLogin
+        handleLogin,
+        handleCompleteProfile
     }
 };
 
