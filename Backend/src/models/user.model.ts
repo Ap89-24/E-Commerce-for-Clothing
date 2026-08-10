@@ -1,19 +1,16 @@
-import bcrypt from 'bcryptjs';
-import { Schema, model, Document } from 'mongoose';
+import bcrypt from "bcryptjs";
+import { Schema, model, Document } from "mongoose";
 export interface IUser extends Document {
   fullName: string;
   email: string;
   password: string;
   contact?: string;
-  role: 'USER' | 'SELLER';
+  role: "USER" | "SELLER";
   googleId?: string;
   profile?: string;
   isProfileCompleted: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
-};
-
-
-
+}
 
 const userSchema = new Schema<IUser>(
   {
@@ -32,7 +29,7 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: function (): boolean {
         return !this.googleId;
-      }
+      },
     },
 
     contact: {
@@ -42,8 +39,8 @@ const userSchema = new Schema<IUser>(
 
     role: {
       type: String,
-      enum: ['USER', 'SELLER'],
-      default: 'USER',
+      enum: ["USER", "SELLER"],
+      default: "USER",
     },
     googleId: {
       type: String,
@@ -54,26 +51,24 @@ const userSchema = new Schema<IUser>(
       default: null,
     },
     isProfileCompleted: {
-    type: Boolean,
-    default: false,
-},
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-userSchema.pre<IUser>("save" , async function() {
-    if(!this.isModified("password")) return;
+userSchema.pre<IUser>("save", async function () {
+  if (!this.isModified("password")) return;
 
-    const hash = await bcrypt.hash(this.password , 10);
-    this.password = hash;
+  const hash = await bcrypt.hash(this.password, 10);
+  this.password = hash;
 });
 
-
-userSchema.methods.comparePassword = async function(password: string) {
-    return await bcrypt.compare(password , this.password);
+userSchema.methods.comparePassword = async function (password: string) {
+  return await bcrypt.compare(password, this.password);
 };
 
-
-export const UserModel = model<IUser>("User" , userSchema);
+export const UserModel = model<IUser>("User", userSchema);

@@ -1,10 +1,13 @@
 import { Router } from "express";
 import { validateLoginUser, validateRegisterUser } from "../validators/auth.validator.js";
-import { completeProfile, googleCallback, loginUser, registerUser } from "../controllers/auth.controller.js";
+import {
+  completeProfile,
+  googleCallback,
+  loginUser,
+  registerUser,
+} from "../controllers/auth.controller.js";
 import passport from "passport";
 import { isAuthenticated } from "../middleware/auth.middleware.js";
-
-
 
 const authRouter = Router();
 
@@ -13,8 +16,7 @@ const authRouter = Router();
 @route -> POST /api/auth/register
 @access -> Public
  */
-authRouter.post("/register" , validateRegisterUser , registerUser);
-
+authRouter.post("/register", validateRegisterUser, registerUser);
 
 /**  
 @description -> Login a  user
@@ -28,18 +30,21 @@ authRouter.post("/login", validateLoginUser, loginUser);
 @route -> GET /api/auth/google
 @access -> Public
  */
-authRouter.get("/google", passport.authenticate("google", { scope: ["profile" , "email"] }));
+authRouter.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 /**
 @description -> Handle Google OAuth callback and log in the user
 @route -> GET /api/auth/google/callback
 @access -> Public
  */
-authRouter.get("/google/callback", passport.authenticate("google", {
+authRouter.get(
+  "/google/callback",
+  passport.authenticate("google", {
     session: false,
-    failureRedirect: "http://localhost:5173/login"
- }) , googleCallback);
-
+    failureRedirect: "http://localhost:5173/login",
+  }),
+  googleCallback
+);
 
 /**
  * @description Complete profile after Google OAuth

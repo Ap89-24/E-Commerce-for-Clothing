@@ -17,26 +17,25 @@ type Config = {
   readonly GOOGLE_CALLBACK_URL: string;
 };
 
+if (!process.env.MONGO_URI) {
+  throw new Error("MONGO_URI is not defined in the environment variables");
+}
 
-if(!process.env.MONGO_URI){
-    throw new Error("MONGO_URI is not defined in the environment variables");
-};
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined in the environment variables");
+}
 
-if(!process.env.JWT_SECRET){
-    throw new Error("JWT_SECRET is not defined in the environment variables");
-};
+if (!process.env.GOOGLE_CLIENT_ID) {
+  throw new Error("GOOGLE_CLIENT_ID is not defined in the environment variables");
+}
 
-if(!process.env.GOOGLE_CLIENT_ID){
-    throw new Error("GOOGLE_CLIENT_ID is not defined in the environment variables");
-};
+if (!process.env.GOOGLE_CLIENT_SECRET) {
+  throw new Error("GOOGLE_CLIENT_SECRET is not defined in the environment variables");
+}
 
-if(!process.env.GOOGLE_CLIENT_SECRET){
-    throw new Error("GOOGLE_CLIENT_SECRET is not defined in the environment variables");
-};
-
-if(!process.env.GOOGLE_CALLBACK_URL){
-    throw new Error("GOOGLE_CALLBACK_URL is not defined in the environment variables");
-};
+if (!process.env.GOOGLE_CALLBACK_URL) {
+  throw new Error("GOOGLE_CALLBACK_URL is not defined in the environment variables");
+}
 
 export const config: Config = {
   MONGO_URI: process.env.MONGO_URI || "",

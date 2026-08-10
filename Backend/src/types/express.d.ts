@@ -23,7 +23,7 @@ import type { IUser } from "../models/user.model.ts";
 
 declare global {
   namespace Express {
-    interface User extends IGoogleUser { }
+    interface User extends IGoogleUser {}
     interface Request {
       currentUser?: IUser;
     }

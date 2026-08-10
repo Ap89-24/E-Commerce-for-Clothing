@@ -7,11 +7,7 @@ import { UserModel } from "../models/user.model.js";
  * Ensure the authenticated user has completed
  * the onboarding/profile completion process.
  */
-export const isProfileCompleted = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const isProfileCompleted = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const user = await UserModel.findById(req.userId);
 

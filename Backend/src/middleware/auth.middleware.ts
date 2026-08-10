@@ -9,11 +9,7 @@ import { config } from "../types/config.js";
  * Verify the JWT stored in the HTTP-only cookie.
  * If valid, attach the authenticated user's id to the request.
  */
-export const isAuthenticated = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const isAuthenticated = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const token = req.cookies.token;
 
