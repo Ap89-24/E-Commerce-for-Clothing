@@ -4,8 +4,11 @@ export interface IUser extends Document {
   fullName: string;
   email: string;
   password: string;
-  contact: string;
+  contact?: string;
   role: 'USER' | 'SELLER';
+  googleId?: string;
+  profile?: string;
+  isProfileCompleted: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
 };
 
@@ -27,12 +30,14 @@ const userSchema = new Schema<IUser>(
 
     password: {
       type: String,
-      required: true,
+      required: function (): boolean {
+        return !this.googleId;
+      }
     },
 
     contact: {
       type: String,
-      required: true,
+      required: false,
     },
 
     role: {
@@ -40,6 +45,18 @@ const userSchema = new Schema<IUser>(
       enum: ['USER', 'SELLER'],
       default: 'USER',
     },
+    googleId: {
+      type: String,
+      default: null,
+    },
+    profile: {
+      type: String,
+      default: null,
+    },
+    isProfileCompleted: {
+    type: Boolean,
+    default: false,
+},
   },
   {
     timestamps: true,

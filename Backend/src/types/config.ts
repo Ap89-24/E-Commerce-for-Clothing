@@ -1,6 +1,13 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+/**
+ * @description Loads and validates all required environment variables
+ * during application startup. If any required configuration is missing,
+ * the application throws an error to prevent running with an invalid setup.
+ * Exports a strongly typed, immutable configuration object for use
+ * throughout the application.
+ */
 
 type Config = {
   readonly MONGO_URI: string;

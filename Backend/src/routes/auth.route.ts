@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { validateLoginUser, validateRegisterUser } from "../validators/auth.validator.js";
-import { googleCallback, loginUser, registerUser } from "../controllers/auth.controller.js";
+import { completeProfile, googleCallback, loginUser, registerUser } from "../controllers/auth.controller.js";
 import passport from "passport";
+import { isAuthenticated } from "../middleware/auth.middleware.js";
 
 
 
@@ -34,7 +35,17 @@ authRouter.get("/google", passport.authenticate("google", { scope: ["profile" , 
 @route -> GET /api/auth/google/callback
 @access -> Public
  */
-authRouter.get("/google/callback", passport.authenticate("google", { session: false }) , googleCallback);
+authRouter.get("/google/callback", passport.authenticate("google", {
+    session: false,
+    failureRedirect: "http://localhost:5173/login"
+ }) , googleCallback);
 
+
+/**
+ * @description Complete profile after Google OAuth
+ * @route PATCH /api/auth/complete-profile
+ * @access Private
+ */
+authRouter.patch("/complete-profile", isAuthenticated, completeProfile);
 
 export default authRouter;
