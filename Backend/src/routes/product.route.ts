@@ -3,6 +3,7 @@ import multer from "multer";
 
 import { createProduct } from "../controllers/product.controller.js";
 import { isSellerAuthenticated } from "../middleware/seller.middleware.js";
+import { validateCreateProduct } from "../validators/product.validator.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -16,6 +17,7 @@ const productRouter = Router();
 productRouter.post(
   "/create-product",
   isSellerAuthenticated,
+  validateCreateProduct,
   upload.array("images", 8),
   createProduct
 );
