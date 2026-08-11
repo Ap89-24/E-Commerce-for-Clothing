@@ -6,6 +6,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 import authRouter from "./routes/auth.route.js";
+import productRouter from "./routes/product.route.js";
 import { config } from "./types/config.js";
 
 const app = expess();
@@ -34,6 +35,16 @@ passport.use(
   )
 );
 
+/**
+ * @description
+ * Register application routes.
+ * - `/api/auth` handles authentication-related operations such as
+ *   user registration, login, Google OAuth, and profile completion.
+ * - `/api/products` handles all product-related operations such as
+ *   creating, updating, retrieving, and deleting products.
+ */
+
 app.use("/api/auth", authRouter);
+app.use("/api/products", productRouter);
 
 export default app;

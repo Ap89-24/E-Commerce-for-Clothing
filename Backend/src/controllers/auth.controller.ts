@@ -10,7 +10,7 @@ const sendTokenResponse = async (
   message: string,
   redirectUrl?: string
 ) => {
-  const token = jwt.sign({ id: user._id }, config.JWT_SECRET, { expiresIn: "3d" });
+  const token = jwt.sign({ id: user._id, role: user.role }, config.JWT_SECRET, { expiresIn: "3d" });
 
   res.cookie("token", token, {
     httpOnly: true,
