@@ -59,6 +59,9 @@ export const registerUser = async (req: Request, res: Response) => {
       role: isSeller ? "SELLER" : "USER",
     });
 
+    user.isProfileCompleted = true;
+    await user.save();
+
     await sendTokenResponse(user, res, "User registered successfully");
   } catch (error) {
     console.error(error);

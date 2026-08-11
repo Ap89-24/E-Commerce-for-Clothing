@@ -36,11 +36,11 @@ const productSchema = new Schema(
       required: true,
     },
     price: {
-      amount: {
+      priceAmount: {
         type: Number,
         required: true,
       },
-      currency: {
+      priceCurrency: {
         type: String,
         enum: ["INR", "USD", "EUR", "JPY", "GBP"],
       },
@@ -48,10 +48,6 @@ const productSchema = new Schema(
     images: [
       {
         url: {
-          type: String,
-          required: true,
-        },
-        alt: {
           type: String,
           required: true,
         },
