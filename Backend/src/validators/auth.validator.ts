@@ -10,6 +10,12 @@ const validateResult = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+/**
+ * @description
+ * Validate the user registration request before creating
+ * a new account by checking the full name, email,
+ * password, contact number, and seller status.
+ */
 export const validateRegisterUser = [
   body("fullName")
     .notEmpty()
@@ -26,6 +32,11 @@ export const validateRegisterUser = [
   validateResult,
 ];
 
+/**
+ * @description
+ * Validate the user login request by ensuring
+ * a valid email address and password are provided.
+ */
 export const validateLoginUser = [
   body("email").notEmpty().isEmail().withMessage("Invalid email address"),
   body("password").notEmpty().withMessage("Password is required"),

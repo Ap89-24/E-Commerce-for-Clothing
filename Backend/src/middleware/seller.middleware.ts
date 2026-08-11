@@ -8,7 +8,7 @@ import { config } from "../types/config.js";
 /**
  * @description
  * Authorize access only to users with the SELLER role.
- * This middleware should be used after `isAuthenticated`
+ * This middleware should be used after `isSellerAuthenticated`
  * to ensure the current user is available on the request.
  */
 export const isSellerAuthenticated = async (

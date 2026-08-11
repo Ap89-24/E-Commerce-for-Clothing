@@ -14,6 +14,11 @@ const upload = multer({
 
 const productRouter = Router();
 
+/**
+ * @description -> Create a new product with product details and images
+ * @route -> POST /api/products/create-product
+ * @access -> Private (Seller Only)
+ */
 productRouter.post(
   "/create-product",
   isSellerAuthenticated,

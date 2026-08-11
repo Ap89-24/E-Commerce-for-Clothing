@@ -10,6 +10,12 @@ const validateResult = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+/**
+ * @description
+ * Validate the product creation request by ensuring
+ * the title, description, price details, and images
+ * are provided before creating a new product.
+ */
 export const validateCreateProduct = [
   body("title").notEmpty().withMessage("Title is required"),
   body("description").notEmpty().withMessage("Description is required"),

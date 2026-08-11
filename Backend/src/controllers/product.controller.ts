@@ -14,7 +14,15 @@ export const createProduct = async (req: Request, res: Response) => {
         message: "Unauthorized",
       });
     }
+
     const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one product image is required.",
+      });
+    }
     const images = await Promise.all(
       files.map(async (file) => {
         return await uploadImage({
@@ -42,7 +50,7 @@ export const createProduct = async (req: Request, res: Response) => {
       product,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error creating product:", error);
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
