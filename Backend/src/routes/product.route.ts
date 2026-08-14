@@ -1,7 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 
-import { createProduct } from "../controllers/product.controller.js";
+import { createProduct, getSellerProducts } from "../controllers/product.controller.js";
 import { isSellerAuthenticated } from "../middleware/seller.middleware.js";
 import { validateCreateProduct } from "../validators/product.validator.js";
 
@@ -27,4 +27,10 @@ productRouter.post(
   createProduct
 );
 
+/**
+ * @description -> Get all products created by the authenticated seller
+ * @route -> GET /api/products/seller-products
+ * @access -> Private (Seller Only)
+ */
+productRouter.get("/seller-products", isSellerAuthenticated, getSellerProducts);
 export default productRouter;

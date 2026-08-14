@@ -16,6 +16,16 @@ dist-ssr
 .env.test.local
 .env.production.local
 
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Ignore all env variants
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*

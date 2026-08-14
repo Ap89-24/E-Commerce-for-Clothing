@@ -57,3 +57,28 @@ export const createProduct = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getSellerProducts = async (req: Request, res: Response) => {
+  try {
+    const seller = req.currentUser;
+    if (!seller) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+    const products = await productModel.find({ seller: seller._id });
+
+    res.status(200).json({
+      success: true,
+      message: "Products fetched successfully",
+      products,
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
