@@ -7,13 +7,12 @@ export interface IProduct extends Document {
   seller: Types.ObjectId;
 
   price: {
-    amount: number;
-    currency: "INR" | "USD" | "EUR" | "JPY" | "GBP";
+    priceAmount: number;
+    priceCurrency: "INR" | "USD" | "EUR" | "JPY" | "GBP";
   };
 
   images: {
     url: string;
-    alt: string;
   }[];
 
   createdAt: Date;

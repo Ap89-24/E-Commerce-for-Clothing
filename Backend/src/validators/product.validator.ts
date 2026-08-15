@@ -21,7 +21,12 @@ export const validateCreateProduct = [
   body("description").notEmpty().withMessage("Description is required"),
   body("priceAmount").notEmpty().withMessage("Price amount is required"),
   body("priceCurrency").notEmpty().withMessage("Price currency is required"),
-  body("images").notEmpty().withMessage("Images are required"),
+  body("images").custom((value, { req }) => {
+    if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
+      throw new Error("Images are required");
+    }
+    return true;
+  }),
 
   validateResult,
 ];
