@@ -3,6 +3,7 @@ import Register from "../features/auth/pages/Register.jsx";
 import Login from "../features/auth/pages/Login.jsx";
 // import ProtectedRoute from "../features/auth/components/ProtectedRoute.jsx";
 import CompleteProfile from "../features/auth/pages/CompleteProfile.jsx";
+import CreateProduct from "../features/product/pages/CreateProduct.jsx";
 
 export const routes = createBrowserRouter([
   {
@@ -21,4 +22,8 @@ export const routes = createBrowserRouter([
     path: "/complete-profile",
     element: <CompleteProfile />,
   },
+  {
+    path: "/create-product",
+    element: <CreateProduct />,
+  }
 ]);

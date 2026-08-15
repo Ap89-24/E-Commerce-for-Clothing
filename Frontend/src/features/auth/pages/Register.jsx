@@ -172,10 +172,13 @@ const Register = () => {
         isSeller: formData.isSeller,
       });
       setTimeout(() => {
-        navigate("/");
+        if (formData.isSeller) {
+          navigate("/create-product");
+        } else {
+          navigate("/");
+        }
       }, 2000);
     } catch (err) {
-      // Errors are already handled in Redux and synced via useEffect
       console.error("Registration failed", err);
     }
   };

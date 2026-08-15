@@ -18,9 +18,11 @@ export const useAuthActions = () => {
         });
         dispatch(setUser(data.user));
         dispatch(setError(null));
+        return data;
       } catch (error) {
-        const message = error ? error.message : "Registration failed";
+        const message = error?.response?.data?.message || error.message || "Registration failed";
         dispatch(setError(message));
+        throw error;
       } finally {
         dispatch(setLoading(false));
       }
@@ -38,9 +40,11 @@ export const useAuthActions = () => {
         });
         dispatch(setUser(data.user));
         dispatch(setError(null));
+        return data;
       } catch (error) {
-        const message = error ? error.message : "Login failed";
+        const message = error?.response?.data?.message || error.message || "Login failed";
         dispatch(setError(message));
+        throw error;
       } finally {
         dispatch(setLoading(false));
       }

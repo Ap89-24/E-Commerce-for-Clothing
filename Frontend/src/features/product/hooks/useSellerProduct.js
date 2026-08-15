@@ -12,9 +12,11 @@ export const useSellerProduct = () => {
         const data = await createProducts(formData);
         dispatch(setSellerProducts(data.products));
         dispatch(setError(null));
+        return { success: true, data };
       } catch (error) {
-        const message = error ? error.message : "Error in creating products";
+        const message = error ? (error.response?.data?.message || error.message) : "Error in creating products";
         dispatch(setError(message));
+        return { success: false, error: message };
       } finally {
         dispatch(setLoading(false));
       }

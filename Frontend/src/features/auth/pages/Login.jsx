@@ -141,12 +141,16 @@ const Login = () => {
     }
 
     try {
-      await handleLogin({
+      const data = await handleLogin({
         email: formData.email,
         password: formData.password,
       });
       setTimeout(() => {
-        navigate("/");
+        if (data?.user?.role === "SELLER") {
+          navigate("/create-product");
+        } else {
+          navigate("/");
+        }
       }, 2000);
     } catch (err) {
       console.error("Login failed", err);

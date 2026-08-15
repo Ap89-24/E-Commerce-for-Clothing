@@ -69,7 +69,11 @@ const CompleteProfile = () => {
     try {
       await handleCompleteProfile(formData);
 
-      navigate("/");
+      if (formData.role === "SELLER") {
+        navigate("/create-product");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error(error);
     }
