@@ -1,11 +1,8 @@
-
-
-import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router';
-import { useAuthActions } from '../hooks/useAuth';
-import ContinueWithGoogle from '../components/ContinueWithGoogle';
-
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router";
+import { useAuthActions } from "../hooks/useAuth";
+import ContinueWithGoogle from "../components/ContinueWithGoogle";
 
 const Input = ({ label, id, type, value, onChange, onBlur, error, touched, rightElement }) => {
   return (
@@ -20,24 +17,22 @@ const Input = ({ label, id, type, value, onChange, onBlur, error, touched, right
         placeholder=" "
         className={`peer block w-full px-0 py-3 text-base text-brand-dark bg-transparent border-b transition-all focus:outline-none placeholder-transparent ${
           touched && error
-            ? 'border-red-500 focus:border-red-500'
-            : 'border-gray-200 focus:border-brand-accent'
+            ? "border-red-500 focus:border-red-500"
+            : "border-gray-200 focus:border-brand-accent"
         }`}
       />
       <label
         htmlFor={id}
         className={`absolute left-0 top-3 text-sm transition-all duration-300 origin-[0_0] -translate-y-5 scale-75 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-gray-400 peer-focus:scale-75 peer-focus:-translate-y-5 cursor-text ${
           touched && error
-            ? 'text-red-500 peer-focus:text-red-500'
-            : 'text-gray-400 peer-focus:text-brand-accent'
+            ? "text-red-500 peer-focus:text-red-500"
+            : "text-gray-400 peer-focus:text-brand-accent"
         }`}
       >
         {label}
       </label>
       {rightElement && (
-        <div className="absolute right-0 bottom-3 flex items-center">
-          {rightElement}
-        </div>
+        <div className="absolute right-0 bottom-3 flex items-center">{rightElement}</div>
       )}
       {touched && error && (
         <p className="text-red-500 text-xs mt-1 transition-all duration-300 font-sans tracking-wide">
@@ -55,11 +50,11 @@ const Register = () => {
 
   // Form State
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    contact: '',
-    password: '',
-    isSeller: false
+    fullName: "",
+    email: "",
+    contact: "",
+    password: "",
+    isSeller: false,
   });
 
   const [errors, setErrors] = useState({});
@@ -78,45 +73,45 @@ const Register = () => {
   // Sync API errors
   useEffect(() => {
     if (apiError) {
-      showToast('error', apiError);
+      showToast("error", apiError);
     }
   }, [apiError]);
 
   // Sync Successful Register
   useEffect(() => {
     if (user) {
-      showToast('success', 'Your account has been created successfully.');
+      showToast("success", "Your account has been created successfully.");
     }
   }, [user]);
 
   // Validation function
   const validate = (name, value) => {
-    let error = '';
-    if (name === 'fullName') {
+    let error = "";
+    if (name === "fullName") {
       if (!value.trim()) {
-        error = 'Full Name is required';
+        error = "Full Name is required";
       } else if (value.trim().length < 3) {
-        error = 'Name must be at least 3 characters';
+        error = "Name must be at least 3 characters";
       }
-    } else if (name === 'email') {
+    } else if (name === "email") {
       if (!value.trim()) {
-        error = 'Email Address is required';
+        error = "Email Address is required";
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        error = 'Please enter a valid email address';
+        error = "Please enter a valid email address";
       }
-    } else if (name === 'contact') {
+    } else if (name === "contact") {
       if (!value.trim()) {
-        error = 'Contact Number is required';
-      } else if (!/^\+?[0-9\s-]{10,14}$/.test(value.replace(/\s+/g, ''))) {
-        error = 'Please enter a valid 10 digit contact number';
+        error = "Contact Number is required";
+      } else if (!/^\+?[0-9\s-]{10,14}$/.test(value.replace(/\s+/g, ""))) {
+        error = "Please enter a valid 10 digit contact number";
       }
-    } else if (name === 'password') {
+    } else if (name === "password") {
       if (!value) {
-        error = 'Password is required';
+        error = "Password is required";
       } else if (value.length < 6) {
-        error = 'Password must be at least 6 characters';
+        error = "Password must be at least 6 characters";
       } else if (!/(?=.*[0-9])|(?=.*[!@#$%^&*])/.test(value)) {
-        error = 'Password must contain at least one number or special character';
+        error = "Password must contain at least one number or special character";
       }
     }
     return error;
@@ -149,9 +144,9 @@ const Register = () => {
     // Mark all fields as touched
     const allTouched = {};
     const validationErrors = {};
-    
+
     Object.keys(formData).forEach((key) => {
-      if (key !== 'isSeller') {
+      if (key !== "isSeller") {
         allTouched[key] = true;
         const error = validate(key, formData[key]);
         if (error) {
@@ -164,7 +159,7 @@ const Register = () => {
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
-      showToast('error', 'Please correct the errors in the form.');
+      showToast("error", "Please correct the errors in the form.");
       return;
     }
 
@@ -174,11 +169,11 @@ const Register = () => {
         fullName: formData.fullName,
         password: formData.password,
         contact: formData.contact,
-        isSeller: formData.isSeller
+        isSeller: formData.isSeller,
       });
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
     } catch (err) {
       // Errors are already handled in Redux and synced via useEffect
       console.error("Registration failed", err);
@@ -232,9 +227,7 @@ const Register = () => {
               <h3 className="text-sm font-semibold text-brand-dark">
                 {toast.type === "success" ? "Success" : "Registration Error"}
               </h3>
-              <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                {toast.message}
-              </p>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{toast.message}</p>
             </div>
             <button
               type="button"
@@ -248,11 +241,7 @@ const Register = () => {
                 stroke="currentColor"
                 strokeWidth="2"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -264,7 +253,7 @@ const Register = () => {
         {/* Left column: Fashion editorial image - shown as top banner on mobile, side column on desktop */}
         <div className="relative w-full md:w-1/2 h-72 md:h-auto overflow-hidden bg-neutral-900 flex items-end">
           <img
-                      src="https://images.unsplash.com/photo-1552109871-65411bb81b4c?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            src="https://images.unsplash.com/photo-1552109871-65411bb81b4c?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="VALOIR Editorial Collection"
             className="absolute inset-0 w-full h-full object-cover opacity-80 scale-105 animate-fade-in"
           />
@@ -299,19 +288,15 @@ const Register = () => {
                     strokeWidth="1.5"
                     stroke="currentColor"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.5 12.75l6 6 9-13.5"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
                 </div>
                 <h2 className="font-serif text-3xl font-medium tracking-tight text-brand-dark mb-3">
                   Welcome to Velnox
                 </h2>
                 <p className="text-gray-500 text-sm max-w-sm mx-auto mb-8 font-sans leading-relaxed">
-                  Your account has been created successfully. Welcome to a
-                  curated world of premium fashion and timeless collections.
+                  Your account has been created successfully. Welcome to a curated world of premium
+                  fashion and timeless collections.
                 </p>
                 <div>
                   <Link
@@ -334,8 +319,7 @@ const Register = () => {
                     Create your account
                   </h2>
                   <p className="text-gray-400 text-sm">
-                    Join thousands of fashion enthusiasts and discover premium
-                    collections.
+                    Join thousands of fashion enthusiasts and discover premium collections.
                   </p>
                 </div>
 
@@ -391,9 +375,7 @@ const Register = () => {
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="text-gray-400 hover:text-brand-dark transition-colors focus:outline-none p-1"
-                        aria-label={
-                          showPassword ? "Hide password" : "Show password"
-                        }
+                        aria-label={showPassword ? "Hide password" : "Show password"}
                       >
                         {showPassword ? (
                           // Eye off icon
@@ -465,9 +447,9 @@ const Register = () => {
                         }`}
                       />
                     </button>
-                    </div>
+                  </div>
 
-                    <ContinueWithGoogle />
+                  <ContinueWithGoogle />
                   {/* Actions */}
                   <div className="space-y-4 pt-2">
                     <button

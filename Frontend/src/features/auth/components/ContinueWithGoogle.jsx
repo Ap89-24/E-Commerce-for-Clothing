@@ -1,5 +1,3 @@
-
-
 const ContinueWithGoogle = () => {
   return (
     <a
