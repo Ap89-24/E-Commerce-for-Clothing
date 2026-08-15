@@ -4,6 +4,8 @@ import Login from "../features/auth/pages/Login.jsx";
 // import ProtectedRoute from "../features/auth/components/ProtectedRoute.jsx";
 import CompleteProfile from "../features/auth/pages/CompleteProfile.jsx";
 import CreateProduct from "../features/product/pages/CreateProduct.jsx";
+import SellerProducts from "../features/product/pages/SellerProducts.jsx";
+import ProductDetails from "../features/product/pages/ProductDetails.jsx";
 
 export const routes = createBrowserRouter([
   {
@@ -25,5 +27,13 @@ export const routes = createBrowserRouter([
   {
     path: "/create-product",
     element: <CreateProduct />,
-  }
+  },
+  {
+    path: "/seller-products",
+    element: <SellerProducts />,
+  },
+  {
+    path: "/product/:id",
+    element: <ProductDetails />,
+  },
 ]);

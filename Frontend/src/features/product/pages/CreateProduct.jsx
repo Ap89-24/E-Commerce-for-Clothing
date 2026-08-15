@@ -3,7 +3,18 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import { useSellerProduct } from "../hooks/useSellerProduct";
 
-const Input = ({ label, id, type, value, onChange, onBlur, error, touched, rightElement, ...props }) => {
+const Input = ({
+  label,
+  id,
+  type,
+  value,
+  onChange,
+  onBlur,
+  error,
+  touched,
+  rightElement,
+  ...props
+}) => {
   return (
     <div className="relative mb-6">
       <input
@@ -85,6 +96,7 @@ const CreateProduct = () => {
   const fileInputRef = useRef(null);
   const { handleCreateProduct } = useSellerProduct();
   const { loading, error: apiError } = useSelector((state) => state.product);
+  const { user } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -99,6 +111,22 @@ const CreateProduct = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [success, setSuccess] = useState(false);
   const [toast, setToast] = useState(null);
+
+  const [loaderVisible, setLoaderVisible] = useState(true);
+  const [loaderFadeOut, setLoaderFadeOut] = useState(false);
+
+  useEffect(() => {
+    const fadeTimer = setTimeout(() => {
+      setLoaderFadeOut(true);
+    }, 600);
+    const removeTimer = setTimeout(() => {
+      setLoaderVisible(false);
+    }, 1300);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
+    };
+  }, []);
 
   // Sync API errors as toasts
   useEffect(() => {
@@ -124,7 +152,8 @@ const CreateProduct = () => {
       else if (value.trim().length < 10) error = "Description must be at least 10 characters";
     } else if (name === "priceAmount") {
       if (!value) error = "Price is required";
-      else if (isNaN(value) || Number(value) <= 0) error = "Please enter a valid price greater than 0";
+      else if (isNaN(value) || Number(value) <= 0)
+        error = "Please enter a valid price greater than 0";
     } else if (name === "images") {
       if (currentImages.length === 0) error = "At least one product image is required";
       else if (currentImages.length > 8) error = "Maximum 8 images allowed";
@@ -262,7 +291,7 @@ const CreateProduct = () => {
     submissionData.append("description", formData.description.trim());
     submissionData.append("priceAmount", formData.priceAmount);
     submissionData.append("priceCurrency", formData.priceCurrency);
-    
+
     images.forEach((img) => {
       submissionData.append("images", img.file);
     });
@@ -285,14 +314,37 @@ const CreateProduct = () => {
 
   return (
     <div className="relative min-h-screen bg-brand-light flex flex-col font-sans selection:bg-brand-accent selection:text-white">
+      {/* Velnox Brand Entry Shimmer Loader */}
+      {loaderVisible && (
+        <div
+          className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-brand-dark transition-opacity duration-700 ease-in-out select-none ${
+            loaderFadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
+          }`}
+        >
+          <div className="text-center animate-fade-up">
+            <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl tracking-[0.3em] text-white font-light mb-6 transition-all duration-1000 transform hover:scale-[1.01]">
+              VELNOX
+            </h1>
+            <div className="h-[1px] w-24 bg-brand-accent mx-auto animate-pulse" />
+            <span className="text-[10px] tracking-[0.4em] font-semibold text-brand-accent uppercase mt-4 block animate-fade-in">
+              Atelier Portal
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Toast Alert */}
       {toast && (
-        <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border animate-fade-in transition-all duration-300 ${
-          toast.type === "success" 
-            ? "bg-white border-emerald-100 text-emerald-800" 
-            : "bg-white border-red-100 text-red-800"
-        }`}>
-          <div className={`w-2 h-2 rounded-full ${toast.type === "success" ? "bg-emerald-500" : "bg-red-500"}`} />
+        <div
+          className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border animate-fade-in transition-all duration-300 ${
+            toast.type === "success"
+              ? "bg-white border-emerald-100 text-emerald-800"
+              : "bg-white border-red-100 text-red-800"
+          }`}
+        >
+          <div
+            className={`w-2 h-2 rounded-full ${toast.type === "success" ? "bg-emerald-500" : "bg-red-500"}`}
+          />
           <span className="text-xs font-semibold uppercase tracking-wider">{toast.message}</span>
         </div>
       )}
@@ -344,7 +396,8 @@ const CreateProduct = () => {
                   Product Published
                 </h2>
                 <p className="text-gray-500 text-sm max-w-sm mx-auto mb-10 font-sans leading-relaxed">
-                  Your creation has been cataloged successfully. It is now live in the Velnox premium designer gallery.
+                  Your creation has been cataloged successfully. It is now live in the Velnox
+                  premium designer gallery.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
@@ -364,18 +417,62 @@ const CreateProduct = () => {
             ) : (
               // Form screen
               <>
-                <div className="mb-10">
-                  <div className="font-serif text-2xl tracking-[0.25em] text-brand-dark mb-8 select-none">
-                    VELNOX
+                <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 border-b border-neutral-100 pb-6">
+                  <div>
+                    <div className="font-serif text-2xl tracking-[0.25em] text-brand-dark mb-4 select-none">
+                      VELNOX
+                    </div>
+                    <h2 className="font-serif text-3xl tracking-tight text-brand-dark mb-2">
+                      Create Product
+                    </h2>
+                    <p className="text-gray-400 text-sm font-sans">
+                      Complete the details below to add a new article of clothing to your
+                      collection.
+                    </p>
                   </div>
-                  <h2 className="font-serif text-3xl tracking-tight text-brand-dark mb-2">
-                    Create Product
-                  </h2>
-                  <p className="text-gray-400 text-sm font-sans">
-                    Complete the details below to add a new article of clothing to your collection.
-                  </p>
+                  <div className="w-full sm:w-auto">
+                    <Link
+                      to="/seller-products"
+                      className="inline-flex items-center justify-center border border-gray-200 hover:border-brand-dark text-brand-dark font-medium px-4 h-10 rounded-xl transition-all duration-300 tracking-wider uppercase text-[10px] w-full sm:w-auto"
+                    >
+                      View Creations
+                    </Link>
+                  </div>
                 </div>
-
+                {/* Active Profile Info Widget */}
+                {user && (
+                  <div className="mb-8 p-4 bg-neutral-50 border border-neutral-100 rounded-xl flex items-center gap-3">
+                    {user.profile ? (
+                      <img
+                        src={user.profile}
+                        alt={user.fullName}
+                        className="w-10 h-10 rounded-full object-cover border border-brand-accent/20"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center text-brand-accent text-sm font-serif animate-pulse">
+                        {user.fullName
+                          ? user.fullName
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                          : "V"}
+                      </div>
+                    )}
+                    <div className="flex-grow min-w-0">
+                      <span className="text-[8px] tracking-wider uppercase font-semibold text-brand-accent block">
+                        Active Designer Profile
+                      </span>
+                      <h4 className="text-xs font-semibold text-brand-dark truncate">
+                        {user.fullName}
+                      </h4>
+                      <p className="text-[10px] text-gray-400 truncate">{user.email}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full text-[9px] font-semibold border border-emerald-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Active
+                    </div>
+                  </div>
+                )}
                 <form onSubmit={handleSubmit} noValidate>
                   {/* Product Title */}
                   <Input
@@ -421,7 +518,10 @@ const CreateProduct = () => {
                       />
                     </div>
                     <div className="relative mb-6">
-                      <label htmlFor="priceCurrency" className="absolute left-0 -translate-y-5 scale-75 text-xs text-gray-400">
+                      <label
+                        htmlFor="priceCurrency"
+                        className="absolute left-0 -translate-y-5 scale-75 text-xs text-gray-400"
+                      >
                         Currency
                       </label>
                       <select
@@ -439,8 +539,18 @@ const CreateProduct = () => {
                         <option value="JPY">JPY (¥)</option>
                       </select>
                       <div className="absolute right-0 bottom-4 pointer-events-none text-gray-400">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </div>
                     </div>
@@ -448,7 +558,9 @@ const CreateProduct = () => {
 
                   {/* Image Upload Zone */}
                   <div className="mb-8">
-                    <label className="block text-sm text-gray-400 mb-3">Product Images (1 to 8 images)</label>
+                    <label className="block text-sm text-gray-400 mb-3">
+                      Product Images (1 to 8 images)
+                    </label>
                     <div
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
@@ -458,8 +570,8 @@ const CreateProduct = () => {
                         isDragOver
                           ? "border-brand-accent bg-brand-accent/5"
                           : errors.images && touched.images
-                          ? "border-red-400 bg-red-50/10"
-                          : "border-gray-200 hover:border-brand-accent hover:bg-neutral-50/50"
+                            ? "border-red-400 bg-red-50/10"
+                            : "border-gray-200 hover:border-brand-accent hover:bg-neutral-50/50"
                       }`}
                     >
                       <input
@@ -503,7 +615,10 @@ const CreateProduct = () => {
                     {images.length > 0 && (
                       <div className="grid grid-cols-4 gap-4 mt-6">
                         {images.map((img, index) => (
-                          <div key={index} className="relative aspect-square rounded-lg overflow-hidden group border border-gray-100 shadow-sm">
+                          <div
+                            key={index}
+                            className="relative aspect-square rounded-lg overflow-hidden group border border-gray-100 shadow-sm"
+                          >
                             <img
                               src={img.previewUrl}
                               alt={`Upload preview ${index + 1}`}
@@ -519,8 +634,18 @@ const CreateProduct = () => {
                               title="Remove image"
                               disabled={loading}
                             >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                              <svg
+                                className="w-3.5 h-3.5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
                               </svg>
                             </button>
                           </div>
@@ -537,9 +662,24 @@ const CreateProduct = () => {
                   >
                     {loading ? (
                       <div className="flex items-center gap-2">
-                        <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        <svg
+                          className="animate-spin h-4 w-4 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
                         </svg>
                         <span>Publishing Atelier Article...</span>
                       </div>

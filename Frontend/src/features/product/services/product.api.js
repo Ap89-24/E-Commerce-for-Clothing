@@ -26,3 +26,25 @@ export const getSellerProducts = async () => {
     throw error;
   }
 };
+
+export const getProductById = async (id) => {
+  try {
+    const response = await productApiInstance.get(`/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error in getting product details", error);
+    throw error;
+  }
+};
+
+export const updateProduct = async (id, formData) => {
+  try {
+    const response = await productApiInstance.put(`/${id}`, formData);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error in updating product details", error);
+    throw error;
+  }
+};
