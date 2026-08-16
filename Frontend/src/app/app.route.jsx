@@ -25,15 +25,15 @@ export const routes = createBrowserRouter([
     element: <CompleteProfile />,
   },
   {
-    path: "/create-product",
+    path: "/seller/create-product",
     element: <CreateProduct />,
   },
   {
-    path: "/seller-products",
+    path: "/seller/seller-products",
     element: <SellerProducts />,
   },
   {
-    path: "/product/:id",
+    path: "/seller/product/:id",
     element: <ProductDetails />,
   },
 ]);
