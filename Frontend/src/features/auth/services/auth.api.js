@@ -49,3 +49,13 @@ export const completeProfile = async ({ contact, role }) => {
     throw error;
   }
 };
+
+export const getMe = async () => {
+  try {
+    const response = await authApiInstance.get("/me");
+    return response.data;
+  } catch (error) {
+    console.error("Error in getMe", error);
+    throw error;
+  }
+};

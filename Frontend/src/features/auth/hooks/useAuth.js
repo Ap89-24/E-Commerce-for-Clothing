@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { completeProfile, login, register } from "../services/auth.api.js";
+import { completeProfile, getMe, login, register } from "../services/auth.api.js";
 import { setUser, setError, setLoading } from "../state/auth.slice.js";
 import { useCallback } from "react";
 
@@ -78,9 +78,25 @@ export const useAuthActions = () => {
     },
     [dispatch]
   );
+  const handleGetMe = useCallback(async () => {
+    try {
+      dispatch(setLoading(true));
+      const data = await getMe();
+      dispatch(setUser(data.user));
+      dispatch(setError(null));
+      return data;
+    } catch (error) {
+      dispatch(setUser(null));
+      throw error;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  }, [dispatch]);
+
   return {
     handleRegister,
     handleLogin,
     handleCompleteProfile,
+    handleGetMe,
   };
 };
