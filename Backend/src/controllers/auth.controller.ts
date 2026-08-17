@@ -206,3 +206,35 @@ export const completeProfile = async (req: Request, res: Response) => {
     },
   });
 };
+
+export const getMe = async (req: Request, res: Response) => {
+  try {
+    const user = req.currentUser;
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authenticated",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        contact: user.contact,
+        profile: user.profile,
+        isProfileCompleted: user.isProfileCompleted,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching current user profile:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};

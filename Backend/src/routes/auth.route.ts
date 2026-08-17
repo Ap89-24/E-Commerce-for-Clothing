@@ -3,6 +3,7 @@ import passport from "passport";
 
 import {
   completeProfile,
+  getMe,
   googleCallback,
   loginUser,
   registerUser,
@@ -53,5 +54,12 @@ authRouter.get(
  * @access Private
  */
 authRouter.patch("/complete-profile", isAuthenticated, completeProfile);
+
+/**
+ * @description Get currently logged-in user profile details
+ * @route GET /api/auth/me
+ * @access Private
+ */
+authRouter.get("/me", isAuthenticated, getMe);
 
 export default authRouter;
