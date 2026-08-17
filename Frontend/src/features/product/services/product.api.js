@@ -48,4 +48,3 @@ export const updateProduct = async (id, formData) => {
     throw error;
   }
 };
-
