@@ -211,3 +211,28 @@ export const updateProduct = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getProducts = async (req: Request, res: Response) => {
+  try {
+    const user = req.currentUser;
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+    const products = await productModel.find();
+
+    res.status(200).json({
+      success: true,
+      message: "Products fetched successfully",
+      products,
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
