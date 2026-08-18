@@ -48,3 +48,14 @@ export const updateProduct = async (id, formData) => {
     throw error;
   }
 };
+
+export const getAllProducts = async () => { 
+  try {
+    const response = await productApiInstance.get("/all-products");
+
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetching product details", error);
+    throw error;
+  }
+};

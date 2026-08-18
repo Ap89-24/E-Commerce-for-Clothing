@@ -146,10 +146,10 @@ const Login = () => {
         password: formData.password,
       });
       setTimeout(() => {
-        if (data?.user?.role === "SELLER") {
-          navigate("/create-product");
-        } else {
+        if (data.role === "USER") {
           navigate("/");
+        } else {
+          navigate("/create-product");
         }
       }, 2000);
     } catch (err) {
