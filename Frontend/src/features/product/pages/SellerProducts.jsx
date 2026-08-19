@@ -199,7 +199,7 @@ const SellerProducts = () => {
                 {sellerProducts.map((product) => (
                   <Link
                     key={product._id}
-                    to={`/product/${product._id}`}
+                    to={`/seller/product/${product._id}`}
                     className="group flex flex-col cursor-pointer"
                   >
                     {/* Portrait 3:4 Aspect Image Card Container */}

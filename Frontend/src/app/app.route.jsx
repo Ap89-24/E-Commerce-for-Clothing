@@ -8,6 +8,7 @@ import SellerProducts from "../features/product/pages/SellerProducts.jsx";
 import ProductDetails from "../features/product/pages/ProductDetails.jsx";
 import ProtectedRoute from "../features/auth/components/ProtectedRoute.jsx";
 import Home from "../features/product/pages/Home.jsx";
+import UserProductDetail from "../features/product/pages/UserProductDetail.jsx";
 
 const RootLayout = () => {
   const { pathname } = useLocation();
@@ -44,6 +45,10 @@ export const routes = createBrowserRouter([
         element: <CompleteProfile />,
       },
       {
+        path: "/product/:productid",
+        element: <UserProductDetail />,
+      },
+      {
         path: "/create-product",
         element: (
           <ProtectedRoute role="SELLER">
@@ -60,7 +65,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/product/:id",
+        path: "/seller/product/:id",
         element: (
           <ProtectedRoute role="SELLER">
             <ProductDetails />

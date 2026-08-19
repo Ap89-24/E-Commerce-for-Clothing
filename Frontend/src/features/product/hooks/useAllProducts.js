@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { setProducts, setLoading, setError } from "../state/product.slice";
-import { getAllProducts } from "../services/allProduct.api";
+import { getAllProducts, getProductById } from "../services/allProduct.api";
 
 export const useAllProducts = () => {
   const dispatch = useDispatch();
@@ -21,7 +21,25 @@ export const useAllProducts = () => {
     }
   }, [dispatch]);
 
+  const handleGetProductById = useCallback(
+    async (id) => {
+      try {
+        dispatch(setLoading(true));
+        const data = await getProductById(id);
+        dispatch(setError(null));
+        return { success: true, data };
+      } catch (error) {
+        const message = error ? error.message : "Error in fetching products";
+        dispatch(setError(message));
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
+
   return {
     handleGetProducts,
+    handleGetProductById,
   };
 };

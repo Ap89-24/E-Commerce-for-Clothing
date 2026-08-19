@@ -15,3 +15,14 @@ export const getAllProducts = async () => {
     throw error;
   }
 };
+
+export const getProductById = async (id) => {
+  try {
+    const response = await allProductApiInstance.get(`/details/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetching product details", error);
+    throw error;
+  }
+};

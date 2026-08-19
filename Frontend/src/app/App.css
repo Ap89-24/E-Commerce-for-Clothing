@@ -52,7 +52,8 @@ body {
 }
 
 /* Lenis Smooth Scroll Configuration */
-html.lenis, html.lenis-body {
+html.lenis,
+html.lenis-body {
   height: auto;
 }
 

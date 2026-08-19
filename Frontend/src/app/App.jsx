@@ -17,8 +17,8 @@ function App() {
   useEffect(() => {
     if (window.Lenis) {
       const lenis = new window.Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        lerp: 0.07,
+        wheelMultiplier: 0.9,
         orientation: "vertical",
         gestureOrientation: "vertical",
         smoothWheel: true,

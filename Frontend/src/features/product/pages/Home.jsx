@@ -205,10 +205,7 @@ const Home = () => {
 
                 {userMenuOpen && (
                   <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setUserMenuOpen(false)}
-                    />
+                    <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
                     <div className="absolute right-0 mt-3 w-56 rounded-xl border border-neutral-100 bg-white p-2 shadow-xl z-20 animate-fade-in">
                       <div className="px-3 py-2 border-b border-neutral-50 mb-1">
                         <p className="text-xs font-semibold text-brand-dark truncate">
@@ -288,7 +285,9 @@ const Home = () => {
               Detail.
             </h2>
             <p className="text-xs sm:text-sm text-neutral-400 tracking-wider max-w-xl mb-12 leading-relaxed font-light animate-fade-up">
-              Discover apparel that transcends fast fashion. Meticulously handcrafted garments designed with heritage fabrics, luxury weaves, and contemporary minimalist silhouettes.
+              Discover apparel that transcends fast fashion. Meticulously handcrafted garments
+              designed with heritage fabrics, luxury weaves, and contemporary minimalist
+              silhouettes.
             </p>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto animate-fade-up">
               <a
@@ -310,12 +309,7 @@ const Home = () => {
             {/* Scroll Indicator */}
             <div className="hidden lg:flex items-center gap-3 mt-16 text-[9px] tracking-[0.3em] text-neutral-500 uppercase animate-pulse">
               <span>Scroll to explore</span>
-              <svg
-                className="w-4.5 h-4.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -414,11 +408,15 @@ const Home = () => {
               "Craftsmanship is the ultimate luxury."
             </h3>
             <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed max-w-xl mb-8 tracking-wider font-light">
-              At Velnox, our apparel is a tribute to heritage weaving. Every cotton-silk saree, every linen blazer, and every structural cut represents a master weaver's work. Our mission is to preserve the art of classical tailoring and offer timeless pieces that tell a story.
+              At Velnox, our apparel is a tribute to heritage weaving. Every cotton-silk saree,
+              every linen blazer, and every structural cut represents a master weaver's work. Our
+              mission is to preserve the art of classical tailoring and offer timeless pieces that
+              tell a story.
             </p>
             <div className="border-l border-brand-accent pl-6 py-1">
               <p className="font-serif italic text-xs text-brand-dark max-w-lg">
-                "We don't design for a season. We design for a lifetime. Each thread is chosen for texture, weight, and longevity, giving our apparel its signature graceful flow."
+                "We don't design for a season. We design for a lifetime. Each thread is chosen for
+                texture, weight, and longevity, giving our apparel its signature graceful flow."
               </p>
               <span className="text-[8px] tracking-[0.2em] font-bold uppercase text-gray-400 mt-2 block">
                 — Head designer, Atelier Velnox
@@ -631,7 +629,8 @@ const Home = () => {
             Become an Atelier Insider
           </h3>
           <p className="text-[11px] text-neutral-400 leading-relaxed max-w-md mx-auto mb-8 font-light tracking-wide">
-            Subscribe to receive private collection releases, exclusive pricing invitations, and seasonal lookbooks from our design workshop.
+            Subscribe to receive private collection releases, exclusive pricing invitations, and
+            seasonal lookbooks from our design workshop.
           </p>
 
           <form
@@ -665,7 +664,8 @@ const Home = () => {
               VELNOX
             </h3>
             <p className="text-xs text-neutral-400 max-w-sm leading-relaxed mb-6 tracking-wide">
-              Velnox is a modern designer collective providing premium luxury clothing. Crafted with standard design principles using silk, organic linen, and mul-cotton.
+              Velnox is a modern designer collective providing premium luxury clothing. Crafted with
+              standard design principles using silk, organic linen, and mul-cotton.
             </p>
           </div>
           <div>
@@ -695,11 +695,11 @@ const Home = () => {
               Atelier
             </h4>
             <p className="text-xs text-neutral-400 leading-relaxed tracking-wider">
-              Mumbai, Maharashtra<br />
-              India<br />
-              <span className="text-[10px] text-brand-accent block mt-3">
-                atelier@velnox.com
-              </span>
+              Mumbai, Maharashtra
+              <br />
+              India
+              <br />
+              <span className="text-[10px] text-brand-accent block mt-3">atelier@velnox.com</span>
             </p>
           </div>
         </div>
