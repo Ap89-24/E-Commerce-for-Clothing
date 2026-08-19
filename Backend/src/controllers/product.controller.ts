@@ -214,13 +214,6 @@ export const updateProduct = async (req: Request, res: Response) => {
 
 export const getProducts = async (req: Request, res: Response) => {
   try {
-    const user = req.currentUser;
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
     const products = await productModel.find();
 
     res.status(200).json({
@@ -235,4 +228,22 @@ export const getProducts = async (req: Request, res: Response) => {
       message: "Internal Server Error",
     });
   }
+};
+
+export const getProductDetails = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const product = await productModel.findById(id);
+  if (!product) {
+    return res.status(404).json({
+      success: false,
+      message: "Product not found",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "Product fetched successfully",
+    product,
+  });
 };
