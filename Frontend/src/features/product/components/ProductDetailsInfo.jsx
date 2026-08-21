@@ -15,6 +15,9 @@ const ProductDetailsInfo = ({
   APPAREL_COLORS,
   reviews,
   averageRating,
+  availableColors,
+  availableSizes,
+  matchingVariant,
 }) => {
   return (
     <div className="lg:col-span-5 flex flex-col justify-start">
@@ -58,11 +61,26 @@ const ProductDetailsInfo = ({
       {/* Pricing showcase */}
       <div className="mb-6 flex items-baseline gap-4">
         <span className="text-3xl font-serif text-brand-dark tracking-wide font-medium">
-          {formatPrice(product.price?.priceAmount, product.price?.priceCurrency)}
+          {formatPrice(
+            matchingVariant ? matchingVariant.price?.priceAmount : product.price?.priceAmount,
+            matchingVariant ? matchingVariant.price?.priceCurrency : product.price?.priceCurrency
+          )}
         </span>
-        <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 border border-emerald-100 rounded-md px-2 py-0.5 tracking-wider uppercase">
-          In Stock / Atelier Direct
-        </span>
+        {matchingVariant ? (
+          matchingVariant.stock > 0 ? (
+            <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 border border-emerald-100 rounded-md px-2 py-0.5 tracking-wider uppercase">
+              In Stock ({matchingVariant.stock} left)
+            </span>
+          ) : (
+            <span className="text-[10px] text-red-700 font-semibold bg-red-50 border border-red-100 rounded-md px-2 py-0.5 tracking-wider uppercase animate-pulse">
+              Out of Stock
+            </span>
+          )
+        ) : (
+          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 border border-emerald-100 rounded-md px-2 py-0.5 tracking-wider uppercase">
+            In Stock / Atelier Direct
+          </span>
+        )}
       </div>
 
       {/* Sizing guides description info */}
@@ -77,16 +95,16 @@ const ProductDetailsInfo = ({
         <div>
           <div className="flex items-center justify-between mb-2.5">
             <span className="text-[10px] uppercase font-bold tracking-widest text-brand-dark">
-              Select Hue: <span className="text-brand-accent">{selectedColor.name}</span>
+              Select Hue: <span className="text-brand-accent">{selectedColor?.name}</span>
             </span>
           </div>
           <div className="flex items-center gap-3">
-            {APPAREL_COLORS.map((colorObj) => (
+            {(availableColors || APPAREL_COLORS).map((colorObj) => (
               <button
                 key={colorObj.name}
                 onClick={() => setSelectedColor(colorObj)}
                 className={`w-7 h-7 rounded-full border transition-all duration-300 flex items-center justify-center cursor-pointer ${
-                  selectedColor.name === colorObj.name
+                  selectedColor?.name === colorObj.name
                     ? "border-brand-dark scale-110 shadow-sm"
                     : "border-neutral-200 hover:border-brand-accent/50"
                 }`}
@@ -116,7 +134,7 @@ const ProductDetailsInfo = ({
             </button>
           </div>
           <div className="flex flex-wrap gap-2.5">
-            {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+            {(availableSizes || ["XS", "S", "M", "L", "XL", "XXL"]).map((size) => (
               <button
                 key={size}
                 onClick={() => setSelectedSize(size)}
@@ -163,15 +181,17 @@ const ProductDetailsInfo = ({
       <div className="flex flex-col sm:flex-row gap-4 mt-8 w-full">
         <button
           onClick={onAddToCart}
-          className="flex-1 inline-flex items-center justify-center border border-brand-dark hover:border-brand-accent bg-transparent text-brand-dark hover:text-brand-accent font-semibold h-13 rounded-xl transition-all duration-300 tracking-widest uppercase text-[10px] cursor-pointer shadow-sm hover:scale-[1.01]"
+          disabled={matchingVariant && matchingVariant.stock <= 0}
+          className="flex-1 inline-flex items-center justify-center border border-brand-dark hover:border-brand-accent bg-transparent text-brand-dark hover:text-brand-accent disabled:opacity-40 disabled:pointer-events-none font-semibold h-13 rounded-xl transition-all duration-300 tracking-widest uppercase text-[10px] cursor-pointer shadow-sm hover:scale-[1.01]"
         >
-          Add to Cart
+          {matchingVariant && matchingVariant.stock <= 0 ? "Out of Stock" : "Add to Cart"}
         </button>
         <button
           onClick={onBuyNow}
-          className="flex-1 inline-flex items-center justify-center bg-brand-dark hover:bg-neutral-800 text-white font-semibold h-13 rounded-xl transition-all duration-500 tracking-widest uppercase text-[10px] cursor-pointer shadow-lg shadow-black/10 hover:scale-[1.01]"
+          disabled={matchingVariant && matchingVariant.stock <= 0}
+          className="flex-1 inline-flex items-center justify-center bg-brand-dark hover:bg-neutral-800 text-white disabled:opacity-40 disabled:pointer-events-none font-semibold h-13 rounded-xl transition-all duration-500 tracking-widest uppercase text-[10px] cursor-pointer shadow-lg shadow-black/10 hover:scale-[1.01]"
         >
-          Buy Now
+          {matchingVariant && matchingVariant.stock <= 0 ? "Unavailable" : "Buy Now"}
         </button>
       </div>
 

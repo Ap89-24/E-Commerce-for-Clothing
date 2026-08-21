@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { useAllProducts } from "../hooks/useAllProducts";
@@ -48,7 +48,7 @@ const UserProductDetail = () => {
   const { handleGetProductById, handleGetProducts } = useAllProducts();
 
   // Redux state
-  const { products = [], loading } = useSelector((state) => state.product);
+  const { products = [] } = useSelector((state) => state.product);
   const { user } = useSelector((state) => state.auth);
 
   // Core detail page states
@@ -62,6 +62,121 @@ const UserProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState(APPAREL_COLORS[0]);
   const [selectedSize, setSelectedSize] = useState("M");
   const [quantity, setQuantity] = useState(1);
+
+  // Extract unique sizes and colors from variants dynamically
+  const availableOptions = useMemo(() => {
+    if (!product || !product.variants || product.variants.length === 0) {
+      return {
+        sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+        colors: APPAREL_COLORS,
+      };
+    }
+
+    const sizes = [
+      ...new Set(
+        product.variants
+          .map((v) => {
+            return (
+              v.attributes?.size ||
+              v.attributes?.Size ||
+              (v.attributes?.get && v.attributes.get("size")) ||
+              (v.attributes?.get && v.attributes.get("Size"))
+            );
+          })
+          .filter(Boolean)
+      ),
+    ];
+
+    const colorNames = [
+      ...new Set(
+        product.variants
+          .map((v) => {
+            return (
+              v.attributes?.color ||
+              v.attributes?.Color ||
+              (v.attributes?.get && v.attributes.get("color")) ||
+              (v.attributes?.get && v.attributes.get("Color"))
+            );
+          })
+          .filter(Boolean)
+      ),
+    ];
+
+    const colors = colorNames.map((name) => {
+      const preset = APPAREL_COLORS.find((c) => c.name.toLowerCase() === name.toLowerCase());
+      if (preset) return preset;
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      let color = "#";
+      for (let i = 0; i < 3; i++) {
+        const value = (hash >> (i * 8)) & 0xff;
+        color += ("00" + value.toString(16)).substr(-2);
+      }
+      return { name, hex: color, accent: "text-neutral-500" };
+    });
+
+    return {
+      sizes: sizes.length > 0 ? sizes : ["M"],
+      colors: colors.length > 0 ? colors : APPAREL_COLORS,
+    };
+  }, [product]);
+
+  // Set initial selected color and size when availableOptions changes
+  useEffect(() => {
+    if (availableOptions.colors.length > 0) {
+      setSelectedColor(availableOptions.colors[0]);
+    }
+    if (availableOptions.sizes.length > 0) {
+      setSelectedSize(availableOptions.sizes[0]);
+    }
+  }, [availableOptions]);
+
+  // Match active variant based on size/color selection
+  const matchingVariant = useMemo(() => {
+    if (!product || !product.variants || product.variants.length === 0) {
+      return null;
+    }
+    return product.variants.find((v) => {
+      const vSize =
+        v.attributes?.size ||
+        v.attributes?.Size ||
+        (v.attributes?.get && v.attributes.get("size")) ||
+        (v.attributes?.get && v.attributes.get("Size"));
+      const vColor =
+        v.attributes?.color ||
+        v.attributes?.Color ||
+        (v.attributes?.get && v.attributes.get("color")) ||
+        (v.attributes?.get && v.attributes.get("Color"));
+
+      const sizeMatched =
+        !vSize || String(vSize).toLowerCase() === String(selectedSize || "").toLowerCase();
+      const colorMatched =
+        !vColor ||
+        (selectedColor &&
+          String(vColor).toLowerCase() === String(selectedColor.name || "").toLowerCase());
+
+      return sizeMatched && colorMatched;
+    });
+  }, [product, selectedColor, selectedSize]);
+
+  // Switch active gallery preview image when variant is selected
+  useEffect(() => {
+    if (
+      matchingVariant &&
+      matchingVariant.images &&
+      matchingVariant.images.length > 0 &&
+      product &&
+      product.images
+    ) {
+      const varImgUrl = matchingVariant.images[0].url;
+      const imgIdx = product.images.findIndex((img) => img.url === varImgUrl);
+      if (imgIdx > -1) {
+        setActiveImageIdx(imgIdx);
+      }
+    }
+  }, [matchingVariant, product]);
 
   // Dialogs and Drawers states
   const [cartOpen, setCartOpen] = useState(false);
@@ -218,6 +333,15 @@ const UserProductDetail = () => {
   const handleAddToCart = () => {
     if (!product) return;
 
+    // Use variant price and image if a matching variant is active
+    const activePrice = matchingVariant ? matchingVariant.price : product.price;
+    const activeImage =
+      matchingVariant && matchingVariant.images && matchingVariant.images.length > 0
+        ? matchingVariant.images[0].url
+        : product.images && product.images.length > 0
+          ? product.images[0].url
+          : "";
+
     const cartItemId = `${product._id}-${selectedColor.name}-${selectedSize}`;
     const existingIdx = cartItems.findIndex((item) => item.cartItemId === cartItemId);
 
@@ -229,8 +353,8 @@ const UserProductDetail = () => {
         cartItemId,
         productId: product._id,
         title: product.title,
-        price: product.price,
-        image: product.images && product.images.length > 0 ? product.images[0].url : "",
+        price: activePrice,
+        image: activeImage,
         color: selectedColor.name,
         size: selectedSize,
         quantity: quantity,
@@ -246,12 +370,21 @@ const UserProductDetail = () => {
   const handleBuyNow = () => {
     if (!product) return;
 
+    // Use variant price and image if a matching variant is active
+    const activePrice = matchingVariant ? matchingVariant.price : product.price;
+    const activeImage =
+      matchingVariant && matchingVariant.images && matchingVariant.images.length > 0
+        ? matchingVariant.images[0].url
+        : product.images && product.images.length > 0
+          ? product.images[0].url
+          : "";
+
     const directItem = {
       cartItemId: `${product._id}-${selectedColor.name}-${selectedSize}-buynow`,
       productId: product._id,
       title: product.title,
-      price: product.price,
-      image: product.images && product.images.length > 0 ? product.images[0].url : "",
+      price: activePrice,
+      image: activeImage,
       color: selectedColor.name,
       size: selectedSize,
       quantity: quantity,
@@ -696,6 +829,9 @@ const UserProductDetail = () => {
                   APPAREL_COLORS={APPAREL_COLORS}
                   reviews={reviews}
                   averageRating={averageRating}
+                  availableColors={availableOptions.colors}
+                  availableSizes={availableOptions.sizes}
+                  matchingVariant={matchingVariant}
                 />
               </div>
 
@@ -777,9 +913,15 @@ const UserProductDetail = () => {
       </main>
 
       {/* Sticky Bottom Actions Bar on Mobile */}
-      {!errorMsg && (
+      {!errorMsg && product && (
         <MobileStickyActions
           product={product}
+          priceAmount={
+            matchingVariant ? matchingVariant.price?.priceAmount : product.price?.priceAmount
+          }
+          priceCurrency={
+            matchingVariant ? matchingVariant.price?.priceCurrency : product.price?.priceCurrency
+          }
           onAddToCart={handleAddToCart}
           onBuyNow={handleBuyNow}
           formatPrice={formatPrice}

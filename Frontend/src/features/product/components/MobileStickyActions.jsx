@@ -1,6 +1,13 @@
 import React from "react";
 
-const MobileStickyActions = ({ product, onAddToCart, onBuyNow, formatPrice }) => {
+const MobileStickyActions = ({
+  product,
+  priceAmount,
+  priceCurrency,
+  onAddToCart,
+  onBuyNow,
+  formatPrice,
+}) => {
   if (!product) return null;
 
   return (
@@ -10,7 +17,7 @@ const MobileStickyActions = ({ product, onAddToCart, onBuyNow, formatPrice }) =>
           Pricing valuation
         </span>
         <span className="text-base font-serif font-bold text-brand-dark truncate max-w-[120px]">
-          {formatPrice(product.price?.priceAmount, product.price?.priceCurrency)}
+          {formatPrice(priceAmount, priceCurrency)}
         </span>
       </div>
       <div className="flex gap-2 flex-grow max-w-[240px]">

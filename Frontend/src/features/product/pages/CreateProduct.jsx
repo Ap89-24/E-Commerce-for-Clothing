@@ -106,6 +106,7 @@ const CreateProduct = () => {
   });
 
   const [images, setImages] = useState([]);
+  const [variants, setVariants] = useState([]);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [isDragOver, setIsDragOver] = useState(false);
@@ -270,16 +271,55 @@ const CreateProduct = () => {
     const priceError = validateField("priceAmount", formData.priceAmount);
     const imagesError = validateField("images", null, images);
 
+    // Validate variants
+    let variantErrors = [];
+    const uniqueVariants = new Set();
+
+    variants.forEach((v, idx) => {
+      let vErr = {};
+      if (!v.attributes.size) {
+        vErr.size = "Size is required";
+      }
+      if (!v.attributes.color || !v.attributes.color.trim()) {
+        vErr.color = "Color is required";
+      }
+      if (!v.priceAmount) {
+        vErr.priceAmount = "Price is required";
+      } else if (isNaN(v.priceAmount) || Number(v.priceAmount) < 0) {
+        vErr.priceAmount = "Price must be non-negative";
+      }
+      if (v.stock === undefined || v.stock === "") {
+        vErr.stock = "Stock is required";
+      } else if (isNaN(v.stock) || Number(v.stock) < 0) {
+        vErr.stock = "Stock must be non-negative";
+      }
+
+      const combination = `${v.attributes.size?.toLowerCase()}-${v.attributes.color?.trim().toLowerCase()}`;
+      if (uniqueVariants.has(combination)) {
+        vErr.duplicate = "Duplicate variant combination";
+      } else {
+        uniqueVariants.add(combination);
+      }
+
+      if (Object.keys(vErr).length > 0) {
+        variantErrors[idx] = vErr;
+      }
+    });
+
     const newErrors = {
       title: titleError,
       description: descError,
       priceAmount: priceError,
       images: imagesError,
+      variants: variantErrors.length > 0 ? variantErrors : null,
     };
 
     setErrors(newErrors);
 
-    const hasErrors = Object.values(newErrors).some((err) => !!err);
+    const hasErrors =
+      Object.values(newErrors).some((err) => err && typeof err === "string") ||
+      variantErrors.length > 0;
+
     if (hasErrors) {
       showToast("error", "Please fix form errors before submitting.");
       return;
@@ -291,6 +331,7 @@ const CreateProduct = () => {
     submissionData.append("description", formData.description.trim());
     submissionData.append("priceAmount", formData.priceAmount);
     submissionData.append("priceCurrency", formData.priceCurrency);
+    submissionData.append("variants", JSON.stringify(variants));
 
     images.forEach((img) => {
       submissionData.append("images", img.file);
@@ -309,6 +350,7 @@ const CreateProduct = () => {
         priceCurrency: "INR",
       });
       setImages([]);
+      setVariants([]);
     }
   };
 
@@ -648,6 +690,239 @@ const CreateProduct = () => {
                                 />
                               </svg>
                             </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Variants section */}
+                  <div className="mb-8 border-t border-neutral-100 pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-sm font-semibold text-brand-dark uppercase tracking-wider">
+                          Product Variants
+                        </h3>
+                        <p className="text-xs text-gray-400 font-light mt-0.5">
+                          Configure sizes, colors, price, and stock for this product.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setVariants((prev) => [
+                            ...prev,
+                            {
+                              stock: 10,
+                              priceAmount: formData.priceAmount || "",
+                              priceCurrency: formData.priceCurrency || "INR",
+                              attributes: { size: "M", color: "" },
+                              imageIndices: [],
+                            },
+                          ])
+                        }
+                        className="inline-flex items-center justify-center border border-brand-dark hover:bg-neutral-50 text-brand-dark font-medium px-4 h-9 rounded-xl transition-all duration-300 tracking-wider uppercase text-[10px] cursor-pointer"
+                      >
+                        + Add Variant
+                      </button>
+                    </div>
+
+                    {variants.length > 0 && (
+                      <div className="space-y-6">
+                        {variants.map((v, idx) => (
+                          <div
+                            key={idx}
+                            className="p-5 bg-neutral-50 border border-neutral-100 rounded-2xl relative animate-fade-in"
+                          >
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setVariants((prev) => prev.filter((_, i) => i !== idx))
+                              }
+                              className="absolute top-4 right-4 text-gray-400 hover:text-red-500 font-bold text-base cursor-pointer px-1"
+                              title="Remove variant"
+                            >
+                              &times;
+                            </button>
+
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                              {/* Size Selection */}
+                              <div>
+                                <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-1">
+                                  Size
+                                </label>
+                                <select
+                                  value={v.attributes.size || "M"}
+                                  onChange={(e) =>
+                                    setVariants((prev) => {
+                                      const updated = [...prev];
+                                      updated[idx].attributes = {
+                                        ...updated[idx].attributes,
+                                        size: e.target.value,
+                                      };
+                                      return updated;
+                                    })
+                                  }
+                                  className="w-full bg-white border border-neutral-200 text-xs rounded-xl h-11 px-3 outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/20 cursor-pointer"
+                                >
+                                  {["XS", "S", "M", "L", "XL", "XXL"].map((sz) => (
+                                    <option key={sz} value={sz}>
+                                      {sz}
+                                    </option>
+                                  ))}
+                                </select>
+                                {errors.variants?.[idx]?.size && (
+                                  <p className="text-red-500 text-[10px] mt-1">
+                                    {errors.variants[idx].size}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Color Hue Input */}
+                              <div>
+                                <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-1">
+                                  Color Hue
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Charcoal Black"
+                                  value={v.attributes.color || ""}
+                                  onChange={(e) =>
+                                    setVariants((prev) => {
+                                      const updated = [...prev];
+                                      updated[idx].attributes = {
+                                        ...updated[idx].attributes,
+                                        color: e.target.value,
+                                      };
+                                      return updated;
+                                    })
+                                  }
+                                  className="w-full bg-white border border-neutral-200 text-xs rounded-xl h-11 px-4 outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/20 text-brand-dark"
+                                />
+                                {errors.variants?.[idx]?.color && (
+                                  <p className="text-red-500 text-[10px] mt-1">
+                                    {errors.variants[idx].color}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4 mb-4">
+                              {/* Price Amount Input */}
+                              <div className="col-span-2">
+                                <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-1">
+                                  Variant Price
+                                </label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  placeholder="Price"
+                                  value={v.priceAmount}
+                                  onChange={(e) =>
+                                    setVariants((prev) => {
+                                      const updated = [...prev];
+                                      updated[idx].priceAmount = e.target.value;
+                                      return updated;
+                                    })
+                                  }
+                                  className="w-full bg-white border border-neutral-200 text-xs rounded-xl h-11 px-4 outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/20 text-brand-dark"
+                                />
+                                {errors.variants?.[idx]?.priceAmount && (
+                                  <p className="text-red-500 text-[10px] mt-1">
+                                    {errors.variants[idx].priceAmount}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Stock Input */}
+                              <div>
+                                <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-1">
+                                  Stock
+                                </label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  placeholder="Stock"
+                                  value={v.stock}
+                                  onChange={(e) =>
+                                    setVariants((prev) => {
+                                      const updated = [...prev];
+                                      updated[idx].stock = e.target.value;
+                                      return updated;
+                                    })
+                                  }
+                                  className="w-full bg-white border border-neutral-200 text-xs rounded-xl h-11 px-4 outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/20 text-brand-dark"
+                                />
+                                {errors.variants?.[idx]?.stock && (
+                                  <p className="text-red-500 text-[10px] mt-1">
+                                    {errors.variants[idx].stock}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Image Select Grid */}
+                            {images.length > 0 && (
+                              <div>
+                                <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-2">
+                                  Assign Variant Images
+                                </label>
+                                <div className="flex flex-wrap gap-2.5">
+                                  {images.map((img, imgIdx) => {
+                                    const isSelected = v.imageIndices?.includes(imgIdx);
+                                    return (
+                                      <button
+                                        key={imgIdx}
+                                        type="button"
+                                        onClick={() =>
+                                          setVariants((prev) => {
+                                            const updated = [...prev];
+                                            const currentIndices = updated[idx].imageIndices || [];
+                                            if (currentIndices.includes(imgIdx)) {
+                                              updated[idx].imageIndices = currentIndices.filter(
+                                                (i) => i !== imgIdx
+                                              );
+                                            } else {
+                                              updated[idx].imageIndices = [
+                                                ...currentIndices,
+                                                imgIdx,
+                                              ];
+                                            }
+                                            return updated;
+                                          })
+                                        }
+                                        className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
+                                          isSelected
+                                            ? "border-brand-accent scale-[1.03] shadow"
+                                            : "border-neutral-200 opacity-60 hover:opacity-100"
+                                        }`}
+                                      >
+                                        <img
+                                          src={img.previewUrl}
+                                          alt=""
+                                          className="w-full h-full object-cover"
+                                        />
+                                        {isSelected && (
+                                          <div className="absolute inset-0 bg-brand-accent/10 flex items-center justify-center">
+                                            <span className="text-white bg-brand-accent rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold shadow">
+                                              ✓
+                                            </span>
+                                          </div>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Duplicate Warning */}
+                            {errors.variants?.[idx]?.duplicate && (
+                              <p className="text-red-500 text-xs mt-2 font-medium">
+                                {errors.variants[idx].duplicate}
+                              </p>
+                            )}
                           </div>
                         ))}
                       </div>

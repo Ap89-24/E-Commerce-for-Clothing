@@ -49,6 +49,8 @@ const ProductDetails = () => {
   });
   const [remainingImages, setRemainingImages] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
+  const [variants, setVariants] = useState([]);
+  const [errors, setErrors] = useState({});
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -96,6 +98,39 @@ const ProductDetails = () => {
     });
     setRemainingImages(product.images || []);
     setNewFiles([]);
+
+    const existingVariants = (product.variants || []).map((v) => {
+      const imageIndices = (v.images || [])
+        .map((vImg) => {
+          return product.images.findIndex((img) => img.url === vImg.url);
+        })
+        .filter((idx) => idx > -1);
+
+      const sizeAttr =
+        v.attributes?.size ||
+        v.attributes?.Size ||
+        (v.attributes?.get && v.attributes.get("size")) ||
+        (v.attributes?.get && v.attributes.get("Size")) ||
+        "";
+      const colorAttr =
+        v.attributes?.color ||
+        v.attributes?.Color ||
+        (v.attributes?.get && v.attributes.get("color")) ||
+        (v.attributes?.get && v.attributes.get("Color")) ||
+        "";
+
+      return {
+        _id: v._id,
+        stock: v.stock ?? 0,
+        priceAmount: v.price?.priceAmount ?? "",
+        priceCurrency: v.price?.priceCurrency ?? "INR",
+        attributes: { size: sizeAttr, color: colorAttr },
+        imageIndices: imageIndices,
+        images: v.images || [],
+      };
+    });
+    setVariants(existingVariants);
+    setErrors({});
     setIsEditing(true);
   };
 
@@ -153,12 +188,58 @@ const ProductDetails = () => {
       return;
     }
 
+    // Validate variants
+    let variantErrors = [];
+    const uniqueVariants = new Set();
+
+    variants.forEach((v, idx) => {
+      let vErr = {};
+      if (!v.attributes.size) {
+        vErr.size = "Size is required";
+      }
+      if (!v.attributes.color || !v.attributes.color.trim()) {
+        vErr.color = "Color is required";
+      }
+      if (!v.priceAmount) {
+        vErr.priceAmount = "Price is required";
+      } else if (isNaN(v.priceAmount) || Number(v.priceAmount) < 0) {
+        vErr.priceAmount = "Price must be non-negative";
+      }
+      if (v.stock === undefined || v.stock === "") {
+        vErr.stock = "Stock is required";
+      } else if (isNaN(v.stock) || Number(v.stock) < 0) {
+        vErr.stock = "Stock must be non-negative";
+      }
+
+      const combination = `${v.attributes.size?.toLowerCase()}-${v.attributes.color?.trim().toLowerCase()}`;
+      if (uniqueVariants.has(combination)) {
+        vErr.duplicate = "Duplicate variant combination";
+      } else {
+        uniqueVariants.add(combination);
+      }
+
+      if (Object.keys(vErr).length > 0) {
+        variantErrors[idx] = vErr;
+      }
+    });
+
+    const newErrors = {
+      variants: variantErrors.length > 0 ? variantErrors : null,
+    };
+    setErrors(newErrors);
+
+    if (variantErrors.length > 0) {
+      showToast("error", "Please fix errors in variants before saving.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("title", editForm.title.trim());
     formData.append("description", editForm.description.trim());
     formData.append("priceAmount", editForm.priceAmount);
     formData.append("priceCurrency", editForm.priceCurrency);
     formData.append("remainingImages", JSON.stringify(remainingImages));
+    formData.append("variants", JSON.stringify(variants));
 
     newFiles.forEach((fileObj) => {
       formData.append("images", fileObj.file);
@@ -169,6 +250,7 @@ const ProductDetails = () => {
       setProduct(result.product);
       newFiles.forEach((fileObj) => URL.revokeObjectURL(fileObj.previewUrl));
       setNewFiles([]);
+      setVariants([]);
       setIsEditing(false);
       setActiveImageIdx(0);
       showToast("success", "Product updated successfully!");
@@ -496,8 +578,8 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Edit Description */}
-                        <div className="mb-8">
-                          <label className="text-gray-400 text-[10px] uppercase tracking-wider block mb-2">
+                        <div className="mb-8 font-sans">
+                          <label className="text-gray-400 text-[10px] uppercase tracking-wider block mb-2 font-sans">
                             Description & Composition
                           </label>
                           <textarea
@@ -511,12 +593,247 @@ const ProductDetails = () => {
                           />
                         </div>
 
+                        {/* Edit Product Variants section */}
+                        <div className="mb-8 border-t border-neutral-100 pt-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h3 className="text-xs font-semibold text-brand-dark uppercase tracking-wider">
+                                Product Variants
+                              </h3>
+                              <p className="text-[10px] text-gray-400 font-light mt-0.5 font-sans">
+                                Configure sizes, colors, price, and stock for this product.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setVariants((prev) => [
+                                  ...prev,
+                                  {
+                                    stock: 10,
+                                    priceAmount: editForm.priceAmount || "",
+                                    priceCurrency: editForm.priceCurrency || "INR",
+                                    attributes: { size: "M", color: "" },
+                                    imageIndices: [],
+                                    images: [],
+                                  },
+                                ])
+                              }
+                              className="inline-flex items-center justify-center border border-brand-dark hover:bg-neutral-50 text-brand-dark font-medium px-4 h-9 rounded-xl transition-all duration-300 tracking-wider uppercase text-[10px] cursor-pointer"
+                            >
+                              + Add Variant
+                            </button>
+                          </div>
+
+                          {variants.length > 0 && (
+                            <div className="space-y-6">
+                              {variants.map((v, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-5 bg-neutral-50 border border-neutral-100 rounded-2xl relative animate-fade-in"
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setVariants((prev) => prev.filter((_, i) => i !== idx))
+                                    }
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-red-500 font-bold text-base cursor-pointer px-1"
+                                    title="Remove variant"
+                                  >
+                                    &times;
+                                  </button>
+
+                                  <div className="grid grid-cols-2 gap-4 mb-4 font-sans">
+                        {/* Size Selection */}
+                                    <div>
+                                      <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-1">
+                                        Size
+                                      </label>
+                                      <select
+                                        value={v.attributes.size || "M"}
+                                        onChange={(e) =>
+                                          setVariants((prev) => {
+                                            const updated = [...prev];
+                                            updated[idx].attributes = {
+                                              ...updated[idx].attributes,
+                                              size: e.target.value,
+                                            };
+                                            return updated;
+                                          })
+                                        }
+                                        className="w-full bg-white border border-neutral-200 text-xs rounded-xl h-11 px-3 outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/20 cursor-pointer"
+                                      >
+                                        {["XS", "S", "M", "L", "XL", "XXL"].map((sz) => (
+                                          <option key={sz} value={sz}>
+                                            {sz}
+                                          </option>
+                                        ))}
+                                      </select>
+                                      {errors.variants?.[idx]?.size && (
+                                        <p className="text-red-500 text-[10px] mt-1 font-sans">
+                                          {errors.variants[idx].size}
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    {/* Color Hue Input */}
+                                    <div>
+                                      <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-1">
+                                        Color Hue
+                                      </label>
+                                      <input
+                                        type="text"
+                                        placeholder="e.g. Charcoal Black"
+                                        value={v.attributes.color || ""}
+                                        onChange={(e) =>
+                                          setVariants((prev) => {
+                                            const updated = [...prev];
+                                            updated[idx].attributes = {
+                                              ...updated[idx].attributes,
+                                              color: e.target.value,
+                                            };
+                                            return updated;
+                                          })
+                                        }
+                                        className="w-full bg-white border border-neutral-200 text-xs rounded-xl h-11 px-4 outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/20 text-brand-dark font-sans"
+                                      />
+                                      {errors.variants?.[idx]?.color && (
+                                        <p className="text-red-500 text-[10px] mt-1 font-sans">
+                                          {errors.variants[idx].color}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-3 gap-4 mb-4 font-sans">
+                                    {/* Price Amount Input */}
+                                    <div className="col-span-2">
+                                      <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-1">
+                                        Variant Price
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="Price"
+                                        value={v.priceAmount}
+                                        onChange={(e) =>
+                                          setVariants((prev) => {
+                                            const updated = [...prev];
+                                            updated[idx].priceAmount = e.target.value;
+                                            return updated;
+                                          })
+                                        }
+                                        className="w-full bg-white border border-neutral-200 text-xs rounded-xl h-11 px-4 outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/20 text-brand-dark font-sans"
+                                      />
+                                      {errors.variants?.[idx]?.priceAmount && (
+                                        <p className="text-red-500 text-[10px] mt-1 font-sans">
+                                          {errors.variants[idx].priceAmount}
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    {/* Stock Input */}
+                                    <div>
+                                      <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-1">
+                                        Stock
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="Stock"
+                                        value={v.stock}
+                                        onChange={(e) =>
+                                          setVariants((prev) => {
+                                            const updated = [...prev];
+                                            updated[idx].stock = e.target.value;
+                                            return updated;
+                                          })
+                                        }
+                                        className="w-full bg-white border border-neutral-200 text-xs rounded-xl h-11 px-4 outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/20 text-brand-dark font-sans"
+                                      />
+                                      {errors.variants?.[idx]?.stock && (
+                                        <p className="text-red-500 text-[10px] mt-1 font-sans">
+                                          {errors.variants[idx].stock}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Image Select Grid */}
+                                  {[...remainingImages, ...newFiles].length > 0 && (
+                                    <div className="font-sans">
+                                      <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-2">
+                                        Assign Variant Images
+                                      </label>
+                                      <div className="flex flex-wrap gap-2.5">
+                                        {[...remainingImages, ...newFiles].map((img, imgIdx) => {
+                                          const isSelected = v.imageIndices?.includes(imgIdx);
+                                          const src = img.url || img.previewUrl;
+                                          return (
+                                            <button
+                                              key={imgIdx}
+                                              type="button"
+                                              onClick={() =>
+                                                setVariants((prev) => {
+                                                  const updated = [...prev];
+                                                  const currentIndices =
+                                                    updated[idx].imageIndices || [];
+                                                  if (currentIndices.includes(imgIdx)) {
+                                                    updated[idx].imageIndices =
+                                                      currentIndices.filter((i) => i !== imgIdx);
+                                                  } else {
+                                                    updated[idx].imageIndices = [
+                                                      ...currentIndices,
+                                                      imgIdx,
+                                                    ];
+                                                  }
+                                                  return updated;
+                                                })
+                                              }
+                                              className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
+                                                isSelected
+                                                  ? "border-brand-accent scale-[1.03] shadow"
+                                                  : "border-neutral-200 opacity-60 hover:opacity-100"
+                                              }`}
+                                            >
+                                              <img
+                                                src={src}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                              />
+                                              {isSelected && (
+                                                <div className="absolute inset-0 bg-brand-accent/10 flex items-center justify-center">
+                                                  <span className="text-white bg-brand-accent rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold shadow">
+                                                    ✓
+                                                  </span>
+                                                </div>
+                                              )}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Duplicate Warning */}
+                                  {errors.variants?.[idx]?.duplicate && (
+                                    <p className="text-red-500 text-xs mt-2 font-medium font-sans">
+                                      {errors.variants[idx].duplicate}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
                         {/* Edit Form Actions */}
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 font-sans mt-6">
                           <button
                             type="submit"
                             disabled={updateLoading}
-                            className="flex-1 inline-flex items-center justify-center bg-brand-dark hover:bg-neutral-800 text-white font-medium h-12 rounded-xl transition-all duration-300 tracking-wider uppercase text-[10px] disabled:opacity-50 cursor-pointer"
+                            className="flex-1 inline-flex items-center justify-center bg-brand-dark hover:bg-neutral-800 text-white font-medium h-12 rounded-xl transition-all duration-300 tracking-wider uppercase text-[10px] disabled:opacity-50 cursor-pointer font-sans"
                           >
                             {updateLoading ? "Saving Curation..." : "Save Curation"}
                           </button>
@@ -524,7 +841,7 @@ const ProductDetails = () => {
                             type="button"
                             onClick={handleCancelEdit}
                             disabled={updateLoading}
-                            className="flex-1 inline-flex items-center justify-center border border-neutral-200 hover:border-brand-dark text-brand-dark font-medium h-12 rounded-xl transition-all duration-300 tracking-wider uppercase text-[10px] cursor-pointer"
+                            className="flex-1 inline-flex items-center justify-center border border-neutral-200 hover:border-brand-dark text-brand-dark font-medium h-12 rounded-xl transition-all duration-300 tracking-wider uppercase text-[10px] cursor-pointer font-sans"
                           >
                             Cancel
                           </button>
@@ -602,6 +919,50 @@ const ProductDetails = () => {
                             {product.description}
                           </p>
                         </div>
+
+                        {/* Variants List Display */}
+                        {product.variants && product.variants.length > 0 && (
+                          <div className="mb-8">
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-dark mb-3 font-sans">
+                              Active Variants
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {product.variants.map((v, idx) => {
+                                const size =
+                                  v.attributes?.size ||
+                                  v.attributes?.Size ||
+                                  (v.attributes?.get && v.attributes.get("size")) ||
+                                  (v.attributes?.get && v.attributes.get("Size"));
+                                const color =
+                                  v.attributes?.color ||
+                                  v.attributes?.Color ||
+                                  (v.attributes?.get && v.attributes.get("color")) ||
+                                  (v.attributes?.get && v.attributes.get("Color"));
+                                return (
+                                  <div
+                                    key={v._id || idx}
+                                    className="p-4 bg-neutral-50/50 border border-neutral-100 rounded-xl flex items-center justify-between text-xs font-sans"
+                                  >
+                                    <div>
+                                      <p className="font-semibold text-brand-dark">
+                                        Size: {size || "N/A"} • Color: {color || "N/A"}
+                                      </p>
+                                      <p className="text-[10px] text-gray-400 mt-0.5">
+                                        Stock: {v.stock} pcs
+                                      </p>
+                                    </div>
+                                    <span className="font-serif font-bold text-brand-dark">
+                                      {formatPrice(
+                                        v.price?.priceAmount || product.price?.priceAmount,
+                                        v.price?.priceCurrency || product.price?.priceCurrency
+                                      )}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
 
                         <div className="h-[1px] w-full bg-neutral-100 my-8" />
 
