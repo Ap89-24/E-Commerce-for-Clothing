@@ -5,7 +5,7 @@ import { uploadImage } from "../services/storage.service.js";
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { title, description, priceAmount, priceCurrency } = req.body;
+    const { title, description, priceAmount, priceCurrency, variants } = req.body;
     const seller = req.currentUser;
 
     if (!seller) {
@@ -42,6 +42,7 @@ export const createProduct = async (req: Request, res: Response) => {
       },
       images,
       seller: seller._id,
+      variants: variants || [],
     });
 
     return res.status(201).json({
@@ -247,3 +248,5 @@ export const getProductDetails = async (req: Request, res: Response) => {
     product,
   });
 };
+
+export const updateProductWithVariant = async (req: Request, res: Response) => {};

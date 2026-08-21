@@ -15,7 +15,7 @@ export interface IProduct extends Document {
     url: string;
   }[];
 
-  variant: {
+  variants: {
     images: {
       url: string;
     }[];
@@ -64,7 +64,7 @@ const productSchema = new Schema(
         },
       },
     ],
-    variant: [
+    variants: [
       {
         images: [
           {

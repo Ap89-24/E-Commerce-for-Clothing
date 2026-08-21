@@ -6,6 +6,7 @@ import {
   getProductById,
   getSellerProducts,
   updateProduct,
+  updateProductWithVariant,
 } from "../controllers/product.controller.js";
 import { isSellerAuthenticated } from "../middleware/seller.middleware.js";
 import { validateCreateProduct } from "../validators/product.validator.js";
@@ -52,5 +53,17 @@ productRouter.get("/:id", getProductById);
  * @access -> Private (Seller Only)
  */
 productRouter.put("/:id", isSellerAuthenticated, upload.array("images", 8), updateProduct);
+
+/**
+ * @description -> Update product details by ID and add new variant to them
+ * @route -> PUT /api/products/:id/variant
+ * @access -> Private (Seller Only)
+ */
+productRouter.put(
+  "/:id/variant",
+  isSellerAuthenticated,
+  upload.array("images", 8),
+  updateProductWithVariant
+);
 
 export default productRouter;
