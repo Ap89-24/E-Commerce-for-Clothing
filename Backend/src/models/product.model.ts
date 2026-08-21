@@ -17,7 +17,7 @@ export interface IProduct extends Document {
 
   variants: {
     images: {
-      url: string;
+      url?: string;
     }[];
     stock: number;
     attributes: Map<string, string>;
@@ -25,6 +25,7 @@ export interface IProduct extends Document {
       priceAmount: number;
       priceCurrency: "INR" | "USD" | "EUR" | "JPY" | "GBP";
     };
+    imageIndices?: number[];
   }[];
 
   createdAt: Date;
