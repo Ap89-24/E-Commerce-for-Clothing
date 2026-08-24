@@ -73,15 +73,15 @@ export const validateCreateProduct = [
         // -----------------------------------
         // Price
         // -----------------------------------
-        if (
-          variant.priceAmount === undefined ||
-          variant.priceAmount === null ||
-          variant.priceAmount === ""
-        ) {
+        const priceVal =
+          variant.price?.priceAmount !== undefined
+            ? variant.price.priceAmount
+            : variant.priceAmount;
+        if (priceVal === undefined || priceVal === null || priceVal === "") {
           throw new Error(`Variant ${index + 1}: price amount is required`);
         }
 
-        const priceAmount = Number(variant.priceAmount);
+        const priceAmount = Number(priceVal);
 
         if (isNaN(priceAmount) || priceAmount < 0) {
           throw new Error(`Variant ${index + 1}: price amount must be a valid non-negative number`);
@@ -90,10 +90,11 @@ export const validateCreateProduct = [
         // -----------------------------------
         // Currency
         // -----------------------------------
-        if (
-          variant.priceCurrency !== undefined &&
-          !allowedCurrencies.includes(variant.priceCurrency)
-        ) {
+        const currencyVal =
+          variant.price?.priceCurrency !== undefined
+            ? variant.price.priceCurrency
+            : variant.priceCurrency;
+        if (currencyVal !== undefined && !allowedCurrencies.includes(currencyVal)) {
           throw new Error(`Variant ${index + 1}: invalid price currency`);
         }
       }

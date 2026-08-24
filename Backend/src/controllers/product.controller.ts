@@ -81,6 +81,13 @@ export const createProduct = async (req: Request, res: Response) => {
       }
 
       // Validate price
+      if (!variant.price || typeof variant.price !== "object") {
+        return res.status(400).json({
+          success: false,
+          message: "Variant price is required.",
+        });
+      }
+
       const variantPrice = Number(variant.price.priceAmount);
 
       if (variant.price.priceAmount === undefined || isNaN(variantPrice) || variantPrice < 0) {

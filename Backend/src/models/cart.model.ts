@@ -30,6 +30,7 @@ const cartSchema = new Schema<ICart>({
       },
       variant: {
         type: mongoose.Schema.Types.ObjectId,
+        ref: "product.variants",
         required: true,
       },
       quantity: {

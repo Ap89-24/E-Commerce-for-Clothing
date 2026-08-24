@@ -91,3 +91,24 @@ export const addToCart = async (req: Request, res: Response) => {
     success: true,
   });
 };
+
+export const getCart = async (req: Request, res: Response) => {
+  const userId = req.currentUser?._id;
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+  let cart = await cartModel.findOne({ user: userId }).populate("items.product");
+
+  if (!cart) {
+    cart = await cartModel.create({ user: userId });
+  }
+
+  return res.status(200).json({
+    message: "Cart fetched successfully",
+    success: true,
+    cart,
+  });
+};
