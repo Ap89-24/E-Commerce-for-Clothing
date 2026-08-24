@@ -1,5 +1,7 @@
 import { Document, model, Schema, Types } from "mongoose";
 
+import priceSchema from "./price.schema.js";
+
 export interface IProduct extends Document {
   title: string;
   description: string;
@@ -48,14 +50,8 @@ const productSchema = new Schema(
       required: true,
     },
     price: {
-      priceAmount: {
-        type: Number,
-        required: true,
-      },
-      priceCurrency: {
-        type: String,
-        enum: ["INR", "USD", "EUR", "JPY", "GBP"],
-      },
+      type: priceSchema,
+      required: true,
     },
     images: [
       {
@@ -84,14 +80,8 @@ const productSchema = new Schema(
           of: String,
         },
         price: {
-          priceAmount: {
-            type: Number,
-            required: true,
-          },
-          priceCurrency: {
-            type: String,
-            enum: ["INR", "USD", "EUR", "JPY", "GBP"],
-          },
+          type: priceSchema,
+          required: true,
         },
       },
     ],

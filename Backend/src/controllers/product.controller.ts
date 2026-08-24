@@ -285,7 +285,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     // -----------------------------------
     // Validate variants if provided
     // -----------------------------------
-    let parsedVariants: IProduct[] = [];
+    let parsedVariants = [];
     if (variants) {
       try {
         parsedVariants = typeof variants === "string" ? JSON.parse(variants) : variants;
@@ -313,7 +313,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 
       const allowedCurrencies = ["INR", "USD", "EUR", "JPY", "GBP"];
       for (const variant of parsedVariants) {
-        const variantStock = Number(variants.stock ?? 0);
+        const variantStock = Number(variant.stock ?? 0);
         if (isNaN(variantStock) || variantStock < 0) {
           return res.status(400).json({
             success: false,
@@ -321,15 +321,15 @@ export const updateProduct = async (req: Request, res: Response) => {
           });
         }
 
-        const variantPrice = Number(variant.price.priceAmount);
-        if (variants.priceAmount === undefined || isNaN(variantPrice) || variantPrice < 0) {
+        const variantPrice = Number(variant.priceAmount);
+        if (variant.priceAmount === undefined || isNaN(variantPrice) || variantPrice < 0) {
           return res.status(400).json({
             success: false,
             message: "Variant price must be a valid non-negative number.",
           });
         }
 
-        const variantCurrency = variant.price.priceCurrency || priceCurrency || "INR";
+        const variantCurrency = variant.priceCurrency || priceCurrency || "INR";
         if (!allowedCurrencies.includes(variantCurrency)) {
           return res.status(400).json({
             success: false,
@@ -338,8 +338,8 @@ export const updateProduct = async (req: Request, res: Response) => {
         }
 
         if (
-          variants.attributes !== undefined &&
-          (typeof variants.attributes !== "object" || Array.isArray(variants.attributes))
+          variant.attributes !== undefined &&
+          (typeof variant.attributes !== "object" || Array.isArray(variant.attributes))
         ) {
           return res.status(400).json({
             success: false,
@@ -353,26 +353,34 @@ export const updateProduct = async (req: Request, res: Response) => {
     product.description = description || product.description;
     if (priceAmount) {
       product.price = {
-        priceAmount: priceAmount,
+        priceAmount: Number(priceAmount),
         priceCurrency: priceCurrency || product.price?.priceCurrency || "INR",
       };
     }
-    product.images = totalImages;
+
+    // Strip _id to prevent duplicate key or casting errors on subdocument array update
+    product.images = totalImages.map((img) => ({ url: img.url }));
 
     if (variants) {
       product.variants = parsedVariants.map((variant) => {
-        let variantImages = variant.images || [];
-        if (Array.isArray(variants.imageIndices)) {
-          variantImages = variants.imageIndices
-            .map((idx: number) => totalImages[idx])
-            .filter((img: { url: string } | undefined) => img !== undefined);
+        let variantImages: { url: string }[] = [];
+        if (Array.isArray(variant.imageIndices)) {
+          variantImages = variant.imageIndices
+            .map((idx: number) => {
+              const img = product.images[idx];
+              return img ? { url: img.url } : undefined;
+            })
+            .filter((img: any) => img !== undefined) as { url: string }[];
+        } else if (Array.isArray(variant.images)) {
+          variantImages = variant.images.map((img: { url: string }) => ({ url: img.url }));
         }
+
         return {
-          stock: Number(variants.stock ?? 0),
-          attributes: variants.attributes || {},
+          stock: Number(variant.stock ?? 0),
+          attributes: variant.attributes || {},
           price: {
-            priceAmount: Number(variants.priceAmount),
-            priceCurrency: variants.priceCurrency || priceCurrency || "INR",
+            priceAmount: Number(variant.priceAmount),
+            priceCurrency: variant.priceCurrency || priceCurrency || "INR",
           },
           images: variantImages,
         };
@@ -390,7 +398,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     console.error("Error updating product:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error",
+      message: error || "Internal Server Error",
     });
   }
 };
@@ -592,7 +600,7 @@ export const updateProductWithVariant = async (req: Request, res: Response) => {
     console.error("Error in updateProductWithVariant:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error",
+      message: error || "Internal Server Error",
     });
   }
 };
