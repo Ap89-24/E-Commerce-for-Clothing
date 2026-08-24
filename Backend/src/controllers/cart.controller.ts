@@ -53,9 +53,41 @@ export const addToCart = async (req: Request, res: Response) => {
 
     if (quantityInCart + quantity > stock) {
       return res.status(400).json({
-        message: `Only ${stock - quantityInCart} items are left in stock. And you already have ${quantityInCart} items in your cart`,
+        message: `Only ${stock} items are left in stock. And you already have ${quantityInCart} items in your cart`,
         success: false,
       });
     }
+
+    await cartModel.findOneAndUpdate(
+      { user: userId, "items.product": productId, "items.variant": variantId },
+      { $inc: { "items.$.quantity": quantity } },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: "Cart updated successfully",
+      success: true,
+    });
   }
+
+  if (quantity > stock) {
+    return res.status(400).json({
+      message: `Only ${stock} are left in stock`,
+      success: false,
+    });
+  }
+
+  cart.items.push({
+    product: productId,
+    variant: variantId,
+    quantity,
+    price: product.price,
+  });
+
+  await cart.save();
+
+  return res.status(200).json({
+    message: "Product added to cart successfully",
+    success: true,
+  });
 };

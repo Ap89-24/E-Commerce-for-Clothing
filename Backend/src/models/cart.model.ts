@@ -2,7 +2,20 @@ import mongoose, { model, Schema } from "mongoose";
 
 import priceSchema from "./price.schema.js";
 
-const cartSchema = new Schema({
+interface ICart extends Document {
+  user: mongoose.Types.ObjectId;
+  items: {
+    product: string;
+    variant: string;
+    quantity: number;
+    price: {
+      priceAmount: number;
+      priceCurrency: "INR" | "USD" | "EUR" | "JPY" | "GBP";
+    };
+  }[];
+}
+
+const cartSchema = new Schema<ICart>({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
