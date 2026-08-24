@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { useAllProducts } from "../hooks/useAllProducts";
 import { setUser } from "../../auth/state/auth.slice";
+import { useCart } from "../../cart/hooks/useCart";
 
 // Import modular subcomponents
 import LightboxModal from "../components/LightboxModal";
@@ -186,8 +187,14 @@ const UserProductDetail = () => {
   const [lightboxImageIdx, setLightboxImageIdx] = useState(0);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  // Cart list state (loaded from / stored in localStorage)
-  const [cartItems, setCartItems] = useState([]);
+  // Cart custom hook integration
+  const {
+    cartItems,
+    handleGetAddToCart,
+    handleUpdateCartQuantity: updateCartQuantity,
+    handleRemoveFromCart: removeCartItem,
+    handleClearCart,
+  } = useCart();
 
   // Reviews states (persisted locally per product)
   const [reviews, setReviews] = useState([]);
@@ -290,23 +297,7 @@ const UserProductDetail = () => {
     }
   }, [productid]);
 
-  // 4. Load Cart items on mount
-  useEffect(() => {
-    const storedCart = localStorage.getItem("velnox_cart");
-    if (storedCart) {
-      try {
-        setCartItems(JSON.parse(storedCart));
-      } catch (e) {
-        console.error("Failed to parse cart items", e);
-      }
-    }
-  }, []);
-
-  // 5. Save Cart items to localStorage
-  const saveCartToStorage = (items) => {
-    setCartItems(items);
-    localStorage.setItem("velnox_cart", JSON.stringify(items));
-  };
+  // Cart storage operations migrated to useCart hook
 
   // 6. Handle entrance animation transitions
   useEffect(() => {
@@ -330,40 +321,28 @@ const UserProductDetail = () => {
   }, [dispatch, navigate]);
 
   // 8. Add to cart handler
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
 
-    // Use variant price and image if a matching variant is active
-    const activePrice = matchingVariant ? matchingVariant.price : product.price;
-    const activeImage =
-      matchingVariant && matchingVariant.images && matchingVariant.images.length > 0
-        ? matchingVariant.images[0].url
-        : product.images && product.images.length > 0
-          ? product.images[0].url
-          : "";
-
-    const cartItemId = `${product._id}-${selectedColor.name}-${selectedSize}`;
-    const existingIdx = cartItems.findIndex((item) => item.cartItemId === cartItemId);
-
-    let updatedCart = [...cartItems];
-    if (existingIdx > -1) {
-      updatedCart[existingIdx].quantity += quantity;
-    } else {
-      updatedCart.push({
-        cartItemId,
-        productId: product._id,
-        title: product.title,
-        price: activePrice,
-        image: activeImage,
-        color: selectedColor.name,
-        size: selectedSize,
-        quantity: quantity,
-      });
+    if (!matchingVariant) {
+      showToast("error", "Please select a valid style configuration");
+      return;
     }
 
-    saveCartToStorage(updatedCart);
-    showToast("success", `Added ${quantity} item(s) to your Atelier Shopping Bag`);
-    setCartOpen(true);
+    try {
+      await handleGetAddToCart({
+        product,
+        variantId: matchingVariant._id,
+        quantity,
+      });
+      showToast("success", `Added ${quantity} item(s) to your Atelier Shopping Bag`);
+      setCartOpen(true);
+    } catch (err) {
+      showToast(
+        "error",
+        err?.response?.data?.message || err.message || "Failed to add product to cart"
+      );
+    }
   };
 
   // 9. Buy Now (Direct Checkout)
@@ -396,24 +375,13 @@ const UserProductDetail = () => {
 
   // 10. Update quantity in Cart drawer
   const handleUpdateCartQuantity = (cartItemId, change) => {
-    const updated = cartItems
-      .map((item) => {
-        if (item.cartItemId === cartItemId) {
-          const newQty = item.quantity + change;
-          return { ...item, quantity: Math.max(1, newQty) };
-        }
-        return item;
-      })
-      .filter((item) => item.quantity > 0);
-
-    saveCartToStorage(updated);
+    updateCartQuantity(cartItemId, change);
   };
 
   // 11. Remove item from Cart drawer
   const handleRemoveFromCart = (cartItemId) => {
-    const updated = cartItems.filter((item) => item.cartItemId !== cartItemId);
-    saveCartToStorage(updated);
-    showToast("success", "Item removed from Atlelier Shopping Bag");
+    removeCartItem(cartItemId);
+    showToast("success", "Item removed from Atelier Shopping Bag");
   };
 
   // 12. Proceed checkout from Cart
@@ -501,7 +469,7 @@ const UserProductDetail = () => {
 
       // If checkouting cart, clean the cart items
       if (!buyNowItem) {
-        saveCartToStorage([]);
+        handleClearCart();
       }
     }, 2800);
   };

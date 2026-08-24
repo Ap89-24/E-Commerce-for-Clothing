@@ -3,6 +3,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import { useAllProducts } from "../hooks/useAllProducts";
 import { setUser } from "../../auth/state/auth.slice";
+import { useCart } from "../../cart/hooks/useCart";
+import CartDrawer from "../components/CartDrawer";
+import CheckoutDrawer from "../components/CheckoutDrawer";
 
 const CURRENCY_SYMBOLS = {
   INR: "₹",
@@ -36,6 +39,142 @@ const Home = () => {
   // Entry Loader State
   const [loaderVisible, setLoaderVisible] = useState(true);
   const [loaderFadeOut, setLoaderFadeOut] = useState(false);
+
+  // Cart / Checkout state integration
+  const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const {
+    cartItems,
+    handleUpdateCartQuantity: updateCartQuantity,
+    handleRemoveFromCart: removeCartItem,
+    handleClearCart,
+  } = useCart();
+
+  const [shippingForm, setShippingForm] = useState({
+    fullName: "",
+    address: "",
+    city: "",
+    zipCode: "",
+    contact: "",
+  });
+  const [cardDetails, setCardDetails] = useState({
+    number: "",
+    name: "",
+    expiry: "",
+    cvv: "",
+  });
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [formErrors, setFormErrors] = useState({});
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleUpdateCartQuantity = (cartItemId, change) => {
+    updateCartQuantity(cartItemId, change);
+  };
+
+  const handleRemoveFromCart = (cartItemId) => {
+    removeCartItem(cartItemId);
+    showToast("success", "Item removed from Atelier Shopping Bag");
+  };
+
+  const handleCartCheckout = () => {
+    setCartOpen(false);
+    setCheckoutOpen(true);
+  };
+
+  const handleCloseCheckout = () => {
+    setCheckoutOpen(false);
+    setCheckoutSuccess(false);
+    setShippingForm({
+      fullName: "",
+      address: "",
+      city: "",
+      zipCode: "",
+      contact: "",
+    });
+    setCardDetails({
+      number: "",
+      name: "",
+      expiry: "",
+      cvv: "",
+    });
+    setFormErrors({});
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!shippingForm.fullName.trim()) errors.fullName = "Full Name is required";
+    if (!shippingForm.address.trim()) errors.address = "Street Address is required";
+    if (!shippingForm.city.trim()) errors.city = "City is required";
+    if (!shippingForm.zipCode.trim()) {
+      errors.zipCode = "ZIP Code is required";
+    } else if (!/^\d{5,6}$/.test(shippingForm.zipCode.trim())) {
+      errors.zipCode = "Enter a valid 5 or 6 digit ZIP code";
+    }
+    if (!shippingForm.contact.trim()) {
+      errors.contact = "Contact number is required";
+    } else if (!/^\+?[\d\s-]{10,13}$/.test(shippingForm.contact.trim())) {
+      errors.contact = "Enter a valid mobile contact number";
+    }
+
+    if (paymentMethod === "card") {
+      if (!cardDetails.name.trim()) errors.cardName = "Cardholder Name is required";
+      if (!cardDetails.number.trim()) {
+        errors.cardNumber = "Card Number is required";
+      } else if (!/^\d{16}$/.test(cardDetails.number.trim())) {
+        errors.cardNumber = "Enter a valid 16-digit Card Number";
+      }
+      if (!cardDetails.expiry.trim()) {
+        errors.cardExpiry = "Expiry is required";
+      } else if (!/^\d{2}\/\d{2}$/.test(cardDetails.expiry.trim())) {
+        errors.cardExpiry = "Enter expiry as MM/YY";
+      }
+      if (!cardDetails.cvv.trim()) {
+        errors.cardCvv = "CVV is required";
+      } else if (!/^\d{3}$/.test(cardDetails.cvv.trim())) {
+        errors.cardCvv = "Enter 3-digit CVV";
+      }
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handlePlaceOrderSubmit = (e) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      showToast("error", "Please correct validation errors on checkout form");
+      return;
+    }
+
+    setIsPlacingOrder(true);
+
+    setTimeout(() => {
+      setIsPlacingOrder(false);
+      setCheckoutSuccess(true);
+      showToast("success", "Purchase transaction successfully broadcasted!");
+      handleClearCart();
+    }, 2800);
+  };
+
+  const currentCartTotal = useMemo(() => {
+    return cartItems.reduce(
+      (acc, item) => acc + Number(item.price?.priceAmount || 0) * item.quantity,
+      0
+    );
+  }, [cartItems]);
+
+  const formattedCardNumber = useMemo(() => {
+    if (!cardDetails.number) return "•••• •••• •••• ••••";
+    return cardDetails.number.replace(/(.{4})/g, "$1 ").trim();
+  }, [cardDetails.number]);
 
   useEffect(() => {
     handleGetProducts();
@@ -174,6 +313,31 @@ const Home = () => {
             </nav>
 
             <div className="h-4 w-[1px] bg-neutral-200 hidden lg:block" />
+
+            {/* Cart trigger button */}
+            <button
+              onClick={() => setCartOpen(true)}
+              className="relative p-2.5 hover:text-brand-accent transition-colors flex items-center justify-center cursor-pointer group"
+              aria-label="Toggle Cart"
+            >
+              <svg
+                className="w-5.5 h-5.5 stroke-current"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                />
+              </svg>
+              {cartItems.length > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-brand-accent text-white text-[8px] font-bold rounded-full flex items-center justify-center shadow-md animate-pulse">
+                  {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+                </span>
+              )}
+            </button>
 
             {/* Profile Dropdown Component */}
             {user ? (
@@ -713,6 +877,56 @@ const Home = () => {
           </span>
         </div>
       </footer>
+
+      {/* Global Toast Alert */}
+      {toast && (
+        <div
+          className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border animate-fade-in transition-all duration-300 ${
+            toast.type === "success"
+              ? "bg-white border-emerald-100 text-emerald-800"
+              : "bg-white border-red-100 text-red-800"
+          }`}
+        >
+          <div
+            className={`w-2.5 h-2.5 rounded-full ${
+              toast.type === "success" ? "bg-emerald-500 animate-ping" : "bg-red-500 animate-ping"
+            }`}
+          />
+          <span className="text-xs font-semibold uppercase tracking-wider">{toast.message}</span>
+        </div>
+      )}
+
+      {/* Cart Drawer Sliding Right-to-Left */}
+      <CartDrawer
+        isOpen={cartOpen}
+        onClose={() => setCartOpen(false)}
+        cartItems={cartItems}
+        onUpdateQuantity={handleUpdateCartQuantity}
+        onRemoveItem={handleRemoveFromCart}
+        onCheckout={handleCartCheckout}
+        currentCartTotal={currentCartTotal}
+        formatPrice={formatPrice}
+      />
+
+      {/* Buy Now / Checkout Drawer Modal */}
+      <CheckoutDrawer
+        isOpen={checkoutOpen}
+        onClose={handleCloseCheckout}
+        checkoutSuccess={checkoutSuccess}
+        checkoutItemsList={cartItems}
+        checkoutTotal={currentCartTotal}
+        shippingForm={shippingForm}
+        setShippingForm={setShippingForm}
+        cardDetails={cardDetails}
+        setCardDetails={setCardDetails}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        formErrors={formErrors}
+        isPlacingOrder={isPlacingOrder}
+        onSubmitOrder={handlePlaceOrderSubmit}
+        formattedCardNumber={formattedCardNumber}
+        formatPrice={formatPrice}
+      />
     </div>
   );
 };

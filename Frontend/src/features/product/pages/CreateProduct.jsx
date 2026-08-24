@@ -325,13 +325,24 @@ const CreateProduct = () => {
       return;
     }
 
+    // Format variants to match the backend schema (nesting priceAmount and priceCurrency inside a 'price' object)
+    const formattedVariants = variants.map((v) => ({
+      stock: Number(v.stock ?? 0),
+      price: {
+        priceAmount: Number(v.priceAmount),
+        priceCurrency: v.priceCurrency || formData.priceCurrency || "INR",
+      },
+      attributes: v.attributes,
+      imageIndices: v.imageIndices,
+    }));
+
     // Build FormData
     const submissionData = new FormData();
     submissionData.append("title", formData.title.trim());
     submissionData.append("description", formData.description.trim());
     submissionData.append("priceAmount", formData.priceAmount);
     submissionData.append("priceCurrency", formData.priceCurrency);
-    submissionData.append("variants", JSON.stringify(variants));
+    submissionData.append("variants", JSON.stringify(formattedVariants));
 
     images.forEach((img) => {
       submissionData.append("images", img.file);

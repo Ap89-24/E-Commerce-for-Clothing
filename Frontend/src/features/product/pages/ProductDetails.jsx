@@ -644,7 +644,7 @@ const ProductDetails = () => {
                                   </button>
 
                                   <div className="grid grid-cols-2 gap-4 mb-4 font-sans">
-                        {/* Size Selection */}
+                                    {/* Size Selection */}
                                     <div>
                                       <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-1">
                                         Size
