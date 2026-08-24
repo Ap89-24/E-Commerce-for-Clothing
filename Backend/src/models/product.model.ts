@@ -28,6 +28,7 @@ export interface IProduct extends Document {
       priceCurrency: "INR" | "USD" | "EUR" | "JPY" | "GBP";
     };
     imageIndices?: number[];
+    _id: string;
   }[];
 
   createdAt: Date;
