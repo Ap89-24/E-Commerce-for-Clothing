@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setItems, setLoading, setError } from "../state/cart.slice.js";
-import { addCart, getCartItems } from "../services/cart.api.js";
+import { setItems, setLoading, setError, incrementCartItem, decrementCartItem } from "../state/cart.slice.js";
+import { addCart, decrementCartItems, getCartItems, incrementCartItems } from "../services/cart.api.js";
 
 // Helper mapper to convert backend cart structure to frontend unified format
 export const mapBackendCartToFrontend = (backendCart) => {
@@ -135,21 +135,50 @@ export const useCart = () => {
   );
 
   const handleUpdateCartQuantity = useCallback(
-    (cartItemId, change) => {
-      const updated = cartItems
-        .map((item) => {
-          if (item.cartItemId === cartItemId) {
-            const newQty = item.quantity + change;
-            return { ...item, quantity: Math.max(1, newQty) };
-          }
-          return item;
-        })
-        .filter((item) => item.quantity > 0);
+    async (cartItemId, change) => {
+      const item = cartItems.find((i) => i.cartItemId === cartItemId);
+      if (!item) return;
 
-      dispatch(setItems(updated));
-      localStorage.setItem("velnox_cart", JSON.stringify(updated));
+      if (user) {
+        try {
+          dispatch(setLoading(true));
+          if (change === 1) {
+            await incrementCartItems({ productId: item.productId, variantId: item.variantId });
+          } else if (change === -1 && item.quantity > 1) {
+            await decrementCartItems({ productId: item.productId, variantId: item.variantId });
+          }
+          // Fetch updated cart from backend to sync state
+          const data = await getCartItems();
+          if (data && data.success && data.cart) {
+            const mappedItems = mapBackendCartToFrontend(data.cart);
+            dispatch(setItems(mappedItems));
+            localStorage.setItem("velnox_cart", JSON.stringify(mappedItems));
+          }
+        } catch (error) {
+          console.error("Error updating quantity on backend:", error);
+          const message =
+            error?.response?.data?.message || error.message || "Failed to update quantity";
+          dispatch(setError(message));
+        } finally {
+          dispatch(setLoading(false));
+        }
+      } else {
+        // Guest user: update locally
+        const updated = cartItems
+          .map((i) => {
+            if (i.cartItemId === cartItemId) {
+              const newQty = i.quantity + change;
+              return { ...i, quantity: Math.max(1, newQty) };
+            }
+            return i;
+          })
+          .filter((i) => i.quantity > 0);
+
+        dispatch(setItems(updated));
+        localStorage.setItem("velnox_cart", JSON.stringify(updated));
+      }
     },
-    [dispatch, cartItems]
+    [dispatch, cartItems, user]
   );
 
   const handleRemoveFromCart = useCallback(
@@ -166,6 +195,47 @@ export const useCart = () => {
     localStorage.removeItem("velnox_cart");
   }, [dispatch]);
 
+  const handleIncrementCartQuantity = useCallback(
+      async ({ productId, variantId }) => {
+        try {
+          dispatch(setLoading(true));
+          const data = await incrementCartItems(productId, variantId);
+          dispatch(incrementCartItem({ productId, variantId }));
+          dispatch(setError(null));
+          return { success: true, data };
+        } catch (error) {
+          const message = error
+            ? error.response?.data?.message || error.message
+            : "Error in incrementing products in the cart";
+          dispatch(setError(message));
+          return { success: false, error: message };
+        } finally {
+          dispatch(setLoading(false));
+        }
+      },
+      [dispatch]
+  );
+  
+ const handleDecrementCartQuantity = useCallback(
+      async ({ productId, variantId }) => {
+        try {
+          dispatch(setLoading(true));
+          const data = await decrementCartItems(productId, variantId);
+          dispatch(decrementCartItem({ productId, variantId }));
+          dispatch(setError(null));
+          return { success: true, data };
+        } catch (error) {
+          const message = error
+            ? error.response?.data?.message || error.message
+            : "Error in decrementing products in the cart";
+          dispatch(setError(message));
+          return { success: false, error: message };
+        } finally {
+          dispatch(setLoading(false));
+        }
+      },
+      [dispatch]
+    );
   return {
     cartItems,
     handleGetAddToCart,
@@ -173,5 +243,7 @@ export const useCart = () => {
     handleUpdateCartQuantity,
     handleRemoveFromCart,
     handleClearCart,
+    handleIncrementCartQuantity,
+    handleDecrementCartQuantity
   };
 };

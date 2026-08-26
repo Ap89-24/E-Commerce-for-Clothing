@@ -26,3 +26,23 @@ export const getCartItems = async () => {
     throw error;
   }
 };
+
+export const incrementCartItems = async ({ productId, variantId }) => {
+  try {
+    const response = await cartApiInstance.patch(`/quantity/increment/${productId}/${variantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error in increasing products in the cart", error);
+    throw error;
+  }
+};
+
+export const decrementCartItems = async ({ productId, variantId }) => {
+  try {
+    const response = await cartApiInstance.patch(`/quantity/decrement/${productId}/${variantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error in increasing products in the cart", error);
+    throw error;
+  }
+};

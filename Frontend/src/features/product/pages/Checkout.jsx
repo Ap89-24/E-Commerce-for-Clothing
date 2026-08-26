@@ -723,7 +723,8 @@ const Checkout = () => {
                             {item.size && (
                               <>
                                 {" • "}
-                                Size: <span className="font-medium text-brand-dark">{item.size}</span>
+                                Size:{" "}
+                                <span className="font-medium text-brand-dark">{item.size}</span>
                               </>
                             )}
                           </p>
