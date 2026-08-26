@@ -1,4 +1,4 @@
-import React from "react";
+
 
 const CartDrawer = ({
   isOpen,
@@ -65,11 +65,17 @@ const CartDrawer = ({
                   key={item.cartItemId}
                   className="flex items-start gap-4 p-3 bg-neutral-50 border border-neutral-100 rounded-2xl relative"
                 >
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-16 h-20 rounded-xl object-cover border border-neutral-200/50"
-                  />
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-16 h-20 rounded-xl object-cover border border-neutral-200/50"
+                    />
+                  ) : (
+                    <div className="w-16 h-20 rounded-xl bg-neutral-100 border border-neutral-200 flex flex-col items-center justify-center text-gray-400 shrink-0">
+                      <span className="text-[8px] uppercase tracking-widest font-bold text-center leading-tight">No<br/>Image</span>
+                    </div>
+                  )}
                   <div className="flex-grow min-w-0 pr-4">
                     <h5 className="text-xs font-serif text-brand-dark truncate">{item.title}</h5>
                     <p className="text-[9px] text-gray-400 mt-1 uppercase tracking-wide">
