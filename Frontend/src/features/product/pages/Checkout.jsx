@@ -26,10 +26,7 @@ const Checkout = () => {
   const navigate = useNavigate();
 
   // Load cart items from hook
-  const {
-    cartItems,
-    handleClearCart,
-  } = useCart();
+  const { cartItems, handleClearCart } = useCart();
 
   // Buy now item from router state (if redirected from direct checkout)
   const buyNowItem = location.state?.buyNowItem || null;
@@ -198,10 +195,7 @@ const Checkout = () => {
       )}
 
       {/* Header bar */}
-      <header
-        ref={headerRef}
-        className="border-b border-neutral-100 bg-white sticky top-0 z-40"
-      >
+      <header ref={headerRef} className="border-b border-neutral-100 bg-white sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link
             to="/"
@@ -279,21 +273,27 @@ const Checkout = () => {
         ) : (
           /* Checkout Inputs Column Split Layout */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            
             {/* Left Column: Form Details (7 of 12 cols on desktop) */}
-            <div ref={formRef} className="lg:col-span-7 bg-white border border-neutral-100 rounded-3xl p-6 md:p-8 shadow-sm">
+            <div
+              ref={formRef}
+              className="lg:col-span-7 bg-white border border-neutral-100 rounded-3xl p-6 md:p-8 shadow-sm"
+            >
               <form onSubmit={handlePlaceOrderSubmit} className="space-y-8" noValidate>
-                
                 {/* 1. Delivery Details */}
                 <div>
                   <h3 className="font-serif text-xl font-light text-brand-dark mb-6 flex items-center gap-2">
-                    <span className="text-[11px] font-sans font-bold bg-brand-accent/10 text-brand-accent w-6 h-6 rounded-full flex items-center justify-center">1</span>
+                    <span className="text-[11px] font-sans font-bold bg-brand-accent/10 text-brand-accent w-6 h-6 rounded-full flex items-center justify-center">
+                      1
+                    </span>
                     Delivery Address Information
                   </h3>
-                  
+
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="shipName" className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold">
+                      <label
+                        htmlFor="shipName"
+                        className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold"
+                      >
                         Full Name
                       </label>
                       <input
@@ -301,7 +301,9 @@ const Checkout = () => {
                         id="shipName"
                         placeholder="e.g. Aditi Sharma"
                         value={shippingForm.fullName}
-                        onChange={(e) => setShippingForm({ ...shippingForm, fullName: e.target.value })}
+                        onChange={(e) =>
+                          setShippingForm({ ...shippingForm, fullName: e.target.value })
+                        }
                         className={`w-full bg-white border text-xs rounded-xl h-11 px-4 outline-none transition-all placeholder-gray-400 text-brand-dark ${
                           formErrors.fullName
                             ? "border-red-500 focus:ring-1 focus:ring-red-100"
@@ -314,7 +316,10 @@ const Checkout = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="shipAddress" className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold">
+                      <label
+                        htmlFor="shipAddress"
+                        className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold"
+                      >
                         Street Address
                       </label>
                       <input
@@ -322,7 +327,9 @@ const Checkout = () => {
                         id="shipAddress"
                         placeholder="Studio Apt, Building, Street details..."
                         value={shippingForm.address}
-                        onChange={(e) => setShippingForm({ ...shippingForm, address: e.target.value })}
+                        onChange={(e) =>
+                          setShippingForm({ ...shippingForm, address: e.target.value })
+                        }
                         className={`w-full bg-white border text-xs rounded-xl h-11 px-4 outline-none transition-all placeholder-gray-400 text-brand-dark ${
                           formErrors.address
                             ? "border-red-500 focus:ring-1"
@@ -336,7 +343,10 @@ const Checkout = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="shipCity" className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold">
+                        <label
+                          htmlFor="shipCity"
+                          className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold"
+                        >
                           City
                         </label>
                         <input
@@ -344,7 +354,9 @@ const Checkout = () => {
                           id="shipCity"
                           placeholder="Mumbai"
                           value={shippingForm.city}
-                          onChange={(e) => setShippingForm({ ...shippingForm, city: e.target.value })}
+                          onChange={(e) =>
+                            setShippingForm({ ...shippingForm, city: e.target.value })
+                          }
                           className={`w-full bg-white border text-xs rounded-xl h-11 px-4 outline-none transition-all placeholder-gray-400 text-brand-dark ${
                             formErrors.city
                               ? "border-red-500 focus:ring-1"
@@ -355,9 +367,12 @@ const Checkout = () => {
                           <p className="text-red-500 text-[10px] mt-1">{formErrors.city}</p>
                         )}
                       </div>
-                      
+
                       <div>
-                        <label htmlFor="shipZip" className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold">
+                        <label
+                          htmlFor="shipZip"
+                          className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold"
+                        >
                           ZIP / Postal Code
                         </label>
                         <input
@@ -365,7 +380,9 @@ const Checkout = () => {
                           id="shipZip"
                           placeholder="400001"
                           value={shippingForm.zipCode}
-                          onChange={(e) => setShippingForm({ ...shippingForm, zipCode: e.target.value })}
+                          onChange={(e) =>
+                            setShippingForm({ ...shippingForm, zipCode: e.target.value })
+                          }
                           className={`w-full bg-white border text-xs rounded-xl h-11 px-4 outline-none transition-all placeholder-gray-400 text-brand-dark ${
                             formErrors.zipCode
                               ? "border-red-500 focus:ring-1"
@@ -379,7 +396,10 @@ const Checkout = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="shipContact" className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold">
+                      <label
+                        htmlFor="shipContact"
+                        className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold"
+                      >
                         Mobile Number
                       </label>
                       <input
@@ -387,7 +407,9 @@ const Checkout = () => {
                         id="shipContact"
                         placeholder="e.g. 9876543210"
                         value={shippingForm.contact}
-                        onChange={(e) => setShippingForm({ ...shippingForm, contact: e.target.value })}
+                        onChange={(e) =>
+                          setShippingForm({ ...shippingForm, contact: e.target.value })
+                        }
                         className={`w-full bg-white border text-xs rounded-xl h-11 px-4 outline-none transition-all placeholder-gray-400 text-brand-dark ${
                           formErrors.contact
                             ? "border-red-500 focus:ring-1"
@@ -404,7 +426,9 @@ const Checkout = () => {
                 {/* 2. Payment details */}
                 <div>
                   <h3 className="font-serif text-xl font-light text-brand-dark mb-6 flex items-center gap-2 border-t border-neutral-50 pt-8">
-                    <span className="text-[11px] font-sans font-bold bg-brand-accent/10 text-brand-accent w-6 h-6 rounded-full flex items-center justify-center">2</span>
+                    <span className="text-[11px] font-sans font-bold bg-brand-accent/10 text-brand-accent w-6 h-6 rounded-full flex items-center justify-center">
+                      2
+                    </span>
                     Payment Processing
                   </h3>
 
@@ -462,7 +486,10 @@ const Checkout = () => {
                       {/* Card form inputs */}
                       <div className="space-y-4">
                         <div>
-                          <label htmlFor="cardName" className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold">
+                          <label
+                            htmlFor="cardName"
+                            className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold"
+                          >
                             Cardholder Name
                           </label>
                           <input
@@ -470,7 +497,9 @@ const Checkout = () => {
                             id="cardName"
                             placeholder="Name on card"
                             value={cardDetails.name}
-                            onChange={(e) => setCardDetails({ ...cardDetails, name: e.target.value })}
+                            onChange={(e) =>
+                              setCardDetails({ ...cardDetails, name: e.target.value })
+                            }
                             className={`w-full bg-white border text-xs rounded-xl h-11 px-4 outline-none transition-all placeholder-gray-400 text-brand-dark ${
                               formErrors.cardName
                                 ? "border-red-500 focus:ring-1"
@@ -483,7 +512,10 @@ const Checkout = () => {
                         </div>
 
                         <div>
-                          <label htmlFor="cardNumber" className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold">
+                          <label
+                            htmlFor="cardNumber"
+                            className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold"
+                          >
                             Card Number
                           </label>
                           <input
@@ -492,7 +524,12 @@ const Checkout = () => {
                             maxLength="16"
                             placeholder="1234567812345678"
                             value={cardDetails.number}
-                            onChange={(e) => setCardDetails({ ...cardDetails, number: e.target.value.replace(/\D/g, "") })}
+                            onChange={(e) =>
+                              setCardDetails({
+                                ...cardDetails,
+                                number: e.target.value.replace(/\D/g, ""),
+                              })
+                            }
                             className={`w-full bg-white border text-xs rounded-xl h-11 px-4 outline-none transition-all placeholder-gray-400 text-brand-dark ${
                               formErrors.cardNumber
                                 ? "border-red-500 focus:ring-1"
@@ -506,7 +543,10 @@ const Checkout = () => {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label htmlFor="cardExpiry" className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold">
+                            <label
+                              htmlFor="cardExpiry"
+                              className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold"
+                            >
                               Expiry Date
                             </label>
                             <input
@@ -527,12 +567,17 @@ const Checkout = () => {
                               }`}
                             />
                             {formErrors.cardExpiry && (
-                              <p className="text-red-500 text-[10px] mt-1">{formErrors.cardExpiry}</p>
+                              <p className="text-red-500 text-[10px] mt-1">
+                                {formErrors.cardExpiry}
+                              </p>
                             )}
                           </div>
 
                           <div>
-                            <label htmlFor="cardCvv" className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold">
+                            <label
+                              htmlFor="cardCvv"
+                              className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1.5 font-semibold"
+                            >
                               Secure CVV
                             </label>
                             <input
@@ -541,7 +586,12 @@ const Checkout = () => {
                               maxLength="3"
                               placeholder="•••"
                               value={cardDetails.cvv}
-                              onChange={(e) => setCardDetails({ ...cardDetails, cvv: e.target.value.replace(/\D/g, "") })}
+                              onChange={(e) =>
+                                setCardDetails({
+                                  ...cardDetails,
+                                  cvv: e.target.value.replace(/\D/g, ""),
+                                })
+                              }
                               className={`w-full bg-white border text-xs rounded-xl h-11 px-4 outline-none transition-all placeholder-gray-400 text-brand-dark ${
                                 formErrors.cardCvv
                                   ? "border-red-500 focus:ring-1"
@@ -576,7 +626,10 @@ const Checkout = () => {
 
                   {paymentMethod === "banking" && (
                     <div className="bg-neutral-50 p-5 border border-neutral-100 rounded-2xl flex flex-col gap-3">
-                      <label htmlFor="bankingSelect" className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1 font-semibold">
+                      <label
+                        htmlFor="bankingSelect"
+                        className="text-gray-400 text-[9px] uppercase tracking-wider block mb-1 font-semibold"
+                      >
                         Choose Major Bank
                       </label>
                       <select
@@ -600,9 +653,24 @@ const Checkout = () => {
                 >
                   {isPlacingOrder ? (
                     <div className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
                       <span>Broadcasting Transaction...</span>
                     </div>
@@ -614,7 +682,10 @@ const Checkout = () => {
             </div>
 
             {/* Right Column: Order Items Summary & Costs (5 of 12 cols on desktop) */}
-            <div ref={summaryRef} className="lg:col-span-5 bg-white border border-neutral-100 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+            <div
+              ref={summaryRef}
+              className="lg:col-span-5 bg-white border border-neutral-100 rounded-3xl p-6 md:p-8 shadow-sm space-y-6"
+            >
               <div>
                 <span className="text-[8px] uppercase tracking-widest text-brand-accent font-extrabold mb-2.5 block">
                   Purchasing Creations Recap
@@ -625,7 +696,10 @@ const Checkout = () => {
 
                 <div className="divide-y divide-neutral-100 max-h-[300px] overflow-y-auto no-scrollbar">
                   {checkoutItems.map((item) => (
-                    <div key={item.cartItemId} className="py-3 flex items-start justify-between gap-4 first:pt-0 last:pb-0">
+                    <div
+                      key={item.cartItemId}
+                      className="py-3 flex items-start justify-between gap-4 first:pt-0 last:pb-0"
+                    >
                       <div className="flex items-center gap-3.5 min-w-0">
                         {item.image ? (
                           <img
@@ -635,7 +709,9 @@ const Checkout = () => {
                           />
                         ) : (
                           <div className="w-12 h-16 rounded-xl bg-neutral-50 border border-neutral-200/50 flex items-center justify-center text-[8px] font-bold text-gray-400 flex-shrink-0 leading-tight text-center">
-                            No<br />Image
+                            No
+                            <br />
+                            Image
                           </div>
                         )}
                         <div className="min-w-0">
@@ -643,15 +719,20 @@ const Checkout = () => {
                             {item.title}
                           </h5>
                           <p className="text-[9px] text-gray-400 mt-1 uppercase tracking-wide">
-                            Hue: <span className="font-medium text-brand-dark">{item.color}</span> • Size: <span className="font-medium text-brand-dark">{item.size}</span>
+                            Hue: <span className="font-medium text-brand-dark">{item.color}</span> •
+                            Size: <span className="font-medium text-brand-dark">{item.size}</span>
                           </p>
                           <p className="text-[9px] text-gray-400 mt-0.5">
-                            Qty: <span className="font-semibold text-brand-dark">{item.quantity}</span>
+                            Qty:{" "}
+                            <span className="font-semibold text-brand-dark">{item.quantity}</span>
                           </p>
                         </div>
                       </div>
                       <span className="text-xs font-semibold text-brand-dark pt-1">
-                        {formatPrice(Number(item.price?.priceAmount || 0) * item.quantity, item.price?.priceCurrency)}
+                        {formatPrice(
+                          Number(item.price?.priceAmount || 0) * item.quantity,
+                          item.price?.priceCurrency
+                        )}
                       </span>
                     </div>
                   ))}
@@ -673,14 +754,15 @@ const Checkout = () => {
                 </div>
                 <div className="h-[1px] w-full bg-neutral-100 my-1" />
                 <div className="flex justify-between items-baseline pt-2">
-                  <span className="text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Total Amount</span>
+                  <span className="text-gray-400 font-semibold uppercase tracking-wider text-[10px]">
+                    Total Amount
+                  </span>
                   <span className="text-xl font-serif font-bold text-brand-dark">
                     {formatPrice(checkoutTotal, checkoutItems[0]?.price?.priceCurrency)}
                   </span>
                 </div>
               </div>
             </div>
-            
           </div>
         )}
       </main>

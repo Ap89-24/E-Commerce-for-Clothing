@@ -475,7 +475,7 @@ const Home = () => {
             <div className="relative w-full max-w-[360px] aspect-[4/5] rounded-3xl overflow-hidden border border-white/10 p-2 bg-white/5 backdrop-blur-xl">
               <div className="w-full h-full rounded-2xl overflow-hidden relative group">
                 <img
-                  src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000"
+                  src="https://i.pinimg.com/736x/0f/23/b9/0f23b936c102bbd003ffafa3e20d0e98.jpg"
                   alt="High-fashion Editorial"
                   className="w-full h-full object-cover transition-transform duration-[2.5s] group-hover:scale-105"
                 />
@@ -537,7 +537,7 @@ const Home = () => {
           <div id="editorial-section-img" className="lg:col-span-5 order-2 lg:order-1 relative">
             <div className="aspect-[16/11] rounded-3xl overflow-hidden border border-neutral-200/60 p-2.5 bg-white shadow-xl shadow-neutral-100">
               <img
-                src="https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=1000"
+                src="https://i.pinimg.com/736x/57/63/55/576355c8f4c85c7bcf19c90881615815.jpg"
                 alt="Atelier Loom and Fabric Detail"
                 className="w-full h-full rounded-2xl object-cover"
               />
@@ -843,11 +843,11 @@ const Home = () => {
               Atelier
             </h4>
             <p className="text-xs text-neutral-400 leading-relaxed tracking-wider">
-              Mumbai, Maharashtra
+              Varanasi, Uttar Pradesh
               <br />
               India
               <br />
-              <span className="text-[10px] text-brand-accent block mt-3">atelier@velnox.com</span>
+              <span className="text-[10px] text-brand-accent block mt-3">Banaras@velnox.com</span>
             </p>
           </div>
         </div>
