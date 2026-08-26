@@ -60,15 +60,15 @@ const UserProductDetail = () => {
 
   // Option selectors
   const [selectedColor, setSelectedColor] = useState(APPAREL_COLORS[0]);
-  const [selectedSize, setSelectedSize] = useState("M");
+  const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
 
   // Extract unique sizes and colors from variants dynamically
   const availableOptions = useMemo(() => {
     if (!product || !product.variants || product.variants.length === 0) {
       return {
-        sizes: ["XS", "S", "M", "L", "XL", "XXL"],
-        colors: APPAREL_COLORS,
+        sizes: [],
+        colors: [],
       };
     }
 
@@ -118,8 +118,8 @@ const UserProductDetail = () => {
     });
 
     return {
-      sizes: sizes.length > 0 ? sizes : ["M"],
-      colors: colors.length > 0 ? colors : APPAREL_COLORS,
+      sizes: sizes,
+      colors: colors,
     };
   }, [product]);
 
@@ -130,6 +130,8 @@ const UserProductDetail = () => {
     }
     if (availableOptions.sizes.length > 0) {
       setSelectedSize(availableOptions.sizes[0]);
+    } else {
+      setSelectedSize("");
     }
   }, [availableOptions]);
 

@@ -51,6 +51,7 @@ const ProductDetails = () => {
   const [newFiles, setNewFiles] = useState([]);
   const [variants, setVariants] = useState([]);
   const [errors, setErrors] = useState({});
+  const [openGalleryIdx, setOpenGalleryIdx] = useState(null);
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -194,9 +195,6 @@ const ProductDetails = () => {
 
     variants.forEach((v, idx) => {
       let vErr = {};
-      if (!v.attributes.size) {
-        vErr.size = "Size is required";
-      }
       if (!v.attributes.color || !v.attributes.color.trim()) {
         vErr.color = "Color is required";
       }
@@ -613,7 +611,7 @@ const ProductDetails = () => {
                                     stock: 10,
                                     priceAmount: editForm.priceAmount || "",
                                     priceCurrency: editForm.priceCurrency || "INR",
-                                    attributes: { size: "M", color: "" },
+                                    attributes: { size: "", color: "" },
                                     imageIndices: [],
                                     images: [],
                                   },
@@ -650,7 +648,7 @@ const ProductDetails = () => {
                                         Size
                                       </label>
                                       <select
-                                        value={v.attributes.size || "M"}
+                                        value={v.attributes.size || ""}
                                         onChange={(e) =>
                                           setVariants((prev) => {
                                             const updated = [...prev];
@@ -663,6 +661,7 @@ const ProductDetails = () => {
                                         }
                                         className="w-full bg-white border border-neutral-200 text-xs rounded-xl h-11 px-3 outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/20 cursor-pointer"
                                       >
+                                        <option value="">None (One Size)</option>
                                         {["XS", "S", "M", "L", "XL", "XXL"].map((sz) => (
                                           <option key={sz} value={sz}>
                                             {sz}
@@ -761,60 +760,153 @@ const ProductDetails = () => {
                                   </div>
 
                                   {/* Image Select Grid */}
-                                  {[...remainingImages, ...newFiles].length > 0 && (
-                                    <div className="font-sans">
-                                      <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark mb-2">
-                                        Assign Variant Images
+                                  <div className="font-sans">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <label className="block text-[10px] uppercase font-bold tracking-widest text-brand-dark">
+                                        Variant Images
                                       </label>
-                                      <div className="flex flex-wrap gap-2.5">
-                                        {[...remainingImages, ...newFiles].map((img, imgIdx) => {
-                                          const isSelected = v.imageIndices?.includes(imgIdx);
-                                          const src = img.url || img.previewUrl;
-                                          return (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenGalleryIdx(openGalleryIdx === idx ? null : idx);
+                                        }}
+                                        className="text-[10px] font-bold text-brand-accent uppercase tracking-widest hover:underline cursor-pointer"
+                                      >
+                                        {openGalleryIdx === idx ? "Hide Gallery" : "Select from Product Gallery"}
+                                      </button>
+                                    </div>
+                                    
+                                    {/* Horizontal list of currently assigned variant images */}
+                                    <div className="flex flex-wrap gap-2.5 mb-4">
+                                      {[...remainingImages, ...newFiles].map((img, imgIdx) => {
+                                        const isSelected = v.imageIndices?.includes(imgIdx);
+                                        if (!isSelected) return null; // ONLY show assigned images!
+                                        const src = img.url || img.previewUrl;
+                                        return (
+                                          <div key={imgIdx} className="relative w-12 h-12 rounded-lg overflow-hidden border border-neutral-200">
+                                            <img
+                                              src={src}
+                                              alt=""
+                                              className="w-full h-full object-cover"
+                                            />
                                             <button
-                                              key={imgIdx}
                                               type="button"
-                                              onClick={() =>
+                                              onClick={() => {
                                                 setVariants((prev) => {
                                                   const updated = [...prev];
-                                                  const currentIndices =
-                                                    updated[idx].imageIndices || [];
-                                                  if (currentIndices.includes(imgIdx)) {
-                                                    updated[idx].imageIndices =
-                                                      currentIndices.filter((i) => i !== imgIdx);
-                                                  } else {
-                                                    updated[idx].imageIndices = [
-                                                      ...currentIndices,
-                                                      imgIdx,
-                                                    ];
-                                                  }
+                                                  const currentIndices = updated[idx].imageIndices || [];
+                                                  updated[idx].imageIndices = currentIndices.filter((i) => i !== imgIdx);
                                                   return updated;
-                                                })
-                                              }
-                                              className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
-                                                isSelected
-                                                  ? "border-brand-accent scale-[1.03] shadow"
-                                                  : "border-neutral-200 opacity-60 hover:opacity-100"
-                                              }`}
+                                                });
+                                              }}
+                                              className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[8px] font-bold shadow z-10 cursor-pointer border-none"
+                                              title="Deselect image"
                                             >
-                                              <img
-                                                src={src}
-                                                alt=""
-                                                className="w-full h-full object-cover"
-                                              />
-                                              {isSelected && (
-                                                <div className="absolute inset-0 bg-brand-accent/10 flex items-center justify-center">
-                                                  <span className="text-white bg-brand-accent rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold shadow">
-                                                    ✓
-                                                  </span>
-                                                </div>
-                                              )}
+                                              &times;
                                             </button>
-                                          );
-                                        })}
-                                      </div>
+                                          </div>
+                                        );
+                                      })}
+                                      
+                                      {/* Upload button for this variant */}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const input = document.createElement("input");
+                                          input.type = "file";
+                                          input.accept = "image/*";
+                                          input.onchange = (e) => {
+                                            const files = Array.from(e.target.files);
+                                            if (files.length > 0) {
+                                              const file = files[0];
+                                              if (file.size > 5 * 1024 * 1024) {
+                                                showToast("error", "File is too large. Max limit is 5MB.");
+                                                return;
+                                              }
+                                              const previewUrl = URL.createObjectURL(file);
+                                              const fileObj = { file, previewUrl };
+                                              
+                                              setNewFiles((prev) => {
+                                                const updatedFiles = [...prev, fileObj];
+                                                const newTotalIndex = remainingImages.length + updatedFiles.length - 1;
+                                                
+                                                setVariants((vPrev) => {
+                                                  const updatedVariants = [...vPrev];
+                                                  const currentIndices = updatedVariants[idx].imageIndices || [];
+                                                  updatedVariants[idx].imageIndices = [...currentIndices, newTotalIndex];
+                                                  return updatedVariants;
+                                                });
+                                                
+                                                return updatedFiles;
+                                              });
+                                            }
+                                          };
+                                          input.click();
+                                        }}
+                                        className="w-12 h-12 rounded-lg border-2 border-dashed border-neutral-300 hover:border-brand-accent flex items-center justify-center cursor-pointer text-gray-400 hover:text-brand-accent transition-all"
+                                        title="Upload new image for this variant"
+                                      >
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                      </button>
                                     </div>
-                                  )}
+
+                                    {/* Collapsible Product Gallery selection grid */}
+                                    {openGalleryIdx === idx && (
+                                      <div className="bg-white border border-neutral-200 rounded-xl p-4 mt-2 animate-fade-in mb-4">
+                                        <p className="text-[9px] uppercase font-bold tracking-wider text-gray-400 mb-3">
+                                          Select images from Product Gallery:
+                                        </p>
+                                        {([...remainingImages, ...newFiles].length === 0) ? (
+                                          <p className="text-[10px] text-gray-400 italic">No images in product gallery. Upload one using the + button.</p>
+                                        ) : (
+                                          <div className="flex flex-wrap gap-2">
+                                            {[...remainingImages, ...newFiles].map((img, imgIdx) => {
+                                              const isSelected = v.imageIndices?.includes(imgIdx);
+                                              const src = img.url || img.previewUrl;
+                                              return (
+                                                <button
+                                                  key={imgIdx}
+                                                  type="button"
+                                                  onClick={() =>
+                                                    setVariants((prev) => {
+                                                      const updated = [...prev];
+                                                      const currentIndices = updated[idx].imageIndices || [];
+                                                      if (currentIndices.includes(imgIdx)) {
+                                                        updated[idx].imageIndices = currentIndices.filter((i) => i !== imgIdx);
+                                                      } else {
+                                                        updated[idx].imageIndices = [...currentIndices, imgIdx];
+                                                      }
+                                                      return updated;
+                                                    })
+                                                  }
+                                                  className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
+                                                    isSelected
+                                                      ? "border-brand-accent scale-[1.03] shadow"
+                                                      : "border-neutral-200 opacity-60 hover:opacity-100"
+                                                  }`}
+                                                >
+                                                  <img
+                                                    src={src}
+                                                    alt=""
+                                                    className="w-full h-full object-cover"
+                                                  />
+                                                  {isSelected && (
+                                                    <div className="absolute inset-0 bg-brand-accent/10 flex items-center justify-center">
+                                                      <span className="text-white bg-brand-accent rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold shadow">
+                                                        ✓
+                                                      </span>
+                                                    </div>
+                                                  )}
+                                                </button>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
 
                                   {/* Duplicate Warning */}
                                   {errors.variants?.[idx]?.duplicate && (

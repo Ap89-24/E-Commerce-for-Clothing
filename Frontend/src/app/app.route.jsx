@@ -75,7 +75,9 @@ export const routes = createBrowserRouter([
       },
       {
         path: "/checkout",
-        element: <Checkout />,
+        element: (<ProtectedRoute>
+          <Checkout />
+        </ProtectedRoute>),
       },
       {
         path: "/register",

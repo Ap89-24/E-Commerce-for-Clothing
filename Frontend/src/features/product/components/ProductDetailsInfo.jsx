@@ -98,57 +98,54 @@ const ProductDetailsInfo = ({
               Select Hue: <span className="text-brand-accent">{selectedColor?.name}</span>
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap gap-2.5">
             {(availableColors || APPAREL_COLORS).map((colorObj) => (
               <button
                 key={colorObj.name}
                 onClick={() => setSelectedColor(colorObj)}
-                className={`w-7 h-7 rounded-full border transition-all duration-300 flex items-center justify-center cursor-pointer ${
+                className={`px-4 h-11 rounded-xl border text-[10px] font-bold tracking-wider transition-all select-none cursor-pointer flex items-center justify-center ${
                   selectedColor?.name === colorObj.name
-                    ? "border-brand-dark scale-110 shadow-sm"
-                    : "border-neutral-200 hover:border-brand-accent/50"
+                    ? "bg-brand-dark border-brand-dark text-white shadow-md shadow-brand-dark/15 scale-[1.02]"
+                    : "bg-white border-neutral-200 text-gray-500 hover:border-brand-dark hover:text-brand-dark"
                 }`}
-                title={colorObj.name}
-                aria-label={`Select Color ${colorObj.name}`}
               >
-                <span
-                  className="w-5.5 h-5.5 rounded-full block border border-black/10"
-                  style={{ backgroundColor: colorObj.hex }}
-                />
+                {colorObj.name}
               </button>
             ))}
           </div>
         </div>
 
         {/* Sizing checkboxes */}
-        <div>
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-[10px] uppercase font-bold tracking-widest text-brand-dark">
-              Select Size: <span className="text-brand-accent">{selectedSize}</span>
-            </span>
-            <button
-              onClick={onOpenSizeGuide}
-              className="text-[10px] font-bold text-brand-accent uppercase tracking-widest hover:underline cursor-pointer"
-            >
-              Size Guide
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2.5">
-            {(availableSizes || ["XS", "S", "M", "L", "XL", "XXL"]).map((size) => (
+        {availableSizes && availableSizes.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-brand-dark">
+                Select Size: <span className="text-brand-accent">{selectedSize}</span>
+              </span>
               <button
-                key={size}
-                onClick={() => setSelectedSize(size)}
-                className={`w-11 h-11 rounded-xl border text-[10px] font-bold tracking-wider transition-all select-none cursor-pointer flex items-center justify-center ${
-                  selectedSize === size
-                    ? "bg-brand-dark border-brand-dark text-white shadow-md shadow-brand-dark/15 scale-[1.02]"
-                    : "bg-white border-neutral-200 text-gray-500 hover:border-brand-dark hover:text-brand-dark"
-                }`}
+                onClick={onOpenSizeGuide}
+                className="text-[10px] font-bold text-brand-accent uppercase tracking-widest hover:underline cursor-pointer"
               >
-                {size}
+                Size Guide
               </button>
-            ))}
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {availableSizes.map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  className={`w-11 h-11 rounded-xl border text-[10px] font-bold tracking-wider transition-all select-none cursor-pointer flex items-center justify-center ${
+                    selectedSize === size
+                      ? "bg-brand-dark border-brand-dark text-white shadow-md shadow-brand-dark/15 scale-[1.02]"
+                      : "bg-white border-neutral-200 text-gray-500 hover:border-brand-dark hover:text-brand-dark"
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Quantity selectors */}
         <div>
