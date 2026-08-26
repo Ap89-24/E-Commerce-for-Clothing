@@ -48,3 +48,17 @@ export const validDecrementCartItemQuantity = [
 
   validateResult,
 ];
+
+/**
+ * @description
+ * Validate the product and variant IDs provided for removing
+ * an item from the authenticated user's cart.
+ */
+
+export const validDeleteCartItem = [
+  param("productId").isMongoId().withMessage("Invalid product Id"),
+
+  param("variantId").isMongoId().withMessage("Invalid variant Id"),
+
+  validateResult,
+];

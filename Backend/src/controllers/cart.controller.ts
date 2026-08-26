@@ -251,3 +251,62 @@ export const decrementCartItemQuantity = async (req: Request, res: Response) => 
     success: true,
   });
 };
+
+export const deleteCartItem = async (req: Request, res: Response) => {
+  const { productId, variantId } = req.params;
+
+  if (typeof productId !== "string" || typeof variantId !== "string") {
+    throw new Error("Invalid productId or variantId");
+  }
+
+  const userId = req.currentUser?._id;
+
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  const cart = await cartModel.findOne({ user: userId });
+
+  if (!cart) {
+    return res.status(404).json({
+      success: false,
+      message: "Cart not found",
+    });
+  }
+
+  const cartItem = cart.items.find(
+    (item) => item.product.toString() === productId && item.variant?.toString() === variantId
+  );
+
+  if (!cartItem) {
+    return res.status(404).json({
+      success: false,
+      message: "Product variant not found in cart",
+    });
+  }
+
+  // Remove the item from the cart
+  cart.items = cart.items.filter(
+    (item) => !(item.product.toString() === productId && item.variant?.toString() === variantId)
+  );
+
+  // If no items remain, delete the entire cart
+  if (cart.items.length === 0) {
+    await cartModel.deleteOne({ user: userId });
+
+    return res.status(200).json({
+      success: true,
+      message: "Cart item removed and cart deleted successfully",
+    });
+  }
+
+  await cart.save();
+
+  return res.status(200).json({
+    success: true,
+    message: "Cart item removed successfully",
+  });
+};
