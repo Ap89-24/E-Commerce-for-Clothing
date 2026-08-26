@@ -38,9 +38,9 @@ export const mapBackendCartToFrontend = (backendCart) => {
       productId: product?._id || "",
       variantId: variantId,
       title: product?.title || "Unknown Product",
-      price: item.price ||
-        variantObj?.price ||
-        product?.price || { priceAmount: 0, priceCurrency: "INR" },
+      price: (variantObj?.price && typeof variantObj.price.priceAmount === "number")
+        ? variantObj.price
+        : (item.price || product?.price || { priceAmount: 0, priceCurrency: "INR" }),
       image: image,
       color: color,
       size: size,
