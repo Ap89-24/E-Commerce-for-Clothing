@@ -194,6 +194,82 @@ const Home = () => {
     }
   }, [loading]);
 
+  // Helper for smooth scrolling using Lenis or native behavior
+  const handleSmoothScroll = (selector) => (e) => {
+    e.preventDefault();
+    if (window.lenisInstance) {
+      window.lenisInstance.scrollTo(selector, { duration: 1.2 });
+    } else {
+      document.querySelector(selector)?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  // GSAP ScrollTrigger Animations for Editorial (Atelier Story) and Catalog sections
+  useEffect(() => {
+    if (window.gsap && window.ScrollTrigger) {
+      window.gsap.registerPlugin(window.ScrollTrigger);
+
+      // Animate Editorial Section Image (slide from left, scale-up, fade-in)
+      window.gsap.fromTo(
+        "#editorial-section-img",
+        { opacity: 0, x: -60, scale: 0.95 },
+        {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          duration: 1.2,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "#editorial-section",
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // Animate Editorial Section Text (slide from right, fade-in)
+      window.gsap.fromTo(
+        "#editorial-section-text",
+        { opacity: 0, x: 60 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 1.2,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "#editorial-section",
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // Animate Catalog Section (slide-up, fade-in)
+      window.gsap.fromTo(
+        "#catalog-section",
+        { opacity: 0, y: 80 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "#catalog-section",
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+
+    // Cleanup scroll triggers on component unmount
+    return () => {
+      if (window.ScrollTrigger) {
+        window.ScrollTrigger.getAll().forEach((t) => t.kill());
+      }
+    };
+  }, []);
+
   // Logout Handler
   const handleLogout = useCallback(() => {
     dispatch(setUser(null));
@@ -284,12 +360,14 @@ const Home = () => {
             <nav className="hidden lg:flex items-center gap-8">
               <a
                 href="#catalog-section"
+                onClick={handleSmoothScroll("#catalog-section")}
                 className="text-[10px] text-gray-500 hover:text-brand-dark transition-colors tracking-widest uppercase font-semibold"
               >
                 Collection
               </a>
               <a
                 href="#editorial-section"
+                onClick={handleSmoothScroll("#editorial-section")}
                 className="text-[10px] text-gray-500 hover:text-brand-dark transition-colors tracking-widest uppercase font-semibold"
               >
                 Atelier Story
@@ -456,6 +534,7 @@ const Home = () => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto animate-fade-up">
               <a
                 href="#catalog-section"
+                onClick={handleSmoothScroll("#catalog-section")}
                 className="inline-flex items-center justify-center bg-brand-accent hover:bg-brand-accent-light text-brand-dark font-semibold px-8 h-12 rounded-xl transition-all duration-500 tracking-widest uppercase text-[10px] min-w-[170px]"
               >
                 Browse Collection
@@ -471,7 +550,10 @@ const Home = () => {
             </div>
 
             {/* Scroll Indicator */}
-            <div className="hidden lg:flex items-center gap-3 mt-16 text-[9px] tracking-[0.3em] text-neutral-500 uppercase animate-pulse">
+            <div
+              onClick={handleSmoothScroll("#editorial-section")}
+              className="hidden lg:flex items-center gap-3 mt-16 text-[9px] tracking-[0.3em] text-neutral-500 uppercase animate-pulse cursor-pointer hover:text-brand-accent transition-colors"
+            >
               <span>Scroll to explore</span>
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -553,7 +635,7 @@ const Home = () => {
       >
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-brand-accent/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-5 order-2 lg:order-1 relative">
+          <div id="editorial-section-img" className="lg:col-span-5 order-2 lg:order-1 relative">
             <div className="aspect-[16/11] rounded-3xl overflow-hidden border border-neutral-200/60 p-2.5 bg-white shadow-xl shadow-neutral-100">
               <img
                 src="https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=1000"
@@ -564,7 +646,7 @@ const Home = () => {
             <div className="absolute -bottom-6 -right-6 z-10 w-24 h-24 bg-brand-accent/10 rounded-full blur-xl pointer-events-none" />
           </div>
 
-          <div className="lg:col-span-7 order-1 lg:order-2 flex flex-col items-start text-left">
+          <div id="editorial-section-text" className="lg:col-span-7 order-1 lg:order-2 flex flex-col items-start text-left">
             <span className="text-[9px] tracking-[0.4em] font-bold text-brand-accent uppercase mb-2">
               THE ART OF ATELIER
             </span>

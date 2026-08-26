@@ -1,5 +1,3 @@
-
-
 const CartDrawer = ({
   isOpen,
   onClose,
@@ -73,7 +71,11 @@ const CartDrawer = ({
                     />
                   ) : (
                     <div className="w-16 h-20 rounded-xl bg-neutral-100 border border-neutral-200 flex flex-col items-center justify-center text-gray-400 shrink-0">
-                      <span className="text-[8px] uppercase tracking-widest font-bold text-center leading-tight">No<br/>Image</span>
+                      <span className="text-[8px] uppercase tracking-widest font-bold text-center leading-tight">
+                        No
+                        <br />
+                        Image
+                      </span>
                     </div>
                   )}
                   <div className="flex-grow min-w-0 pr-4">
