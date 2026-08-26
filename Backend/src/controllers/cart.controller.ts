@@ -77,11 +77,14 @@ export const addToCart = async (req: Request, res: Response) => {
     });
   }
 
+  const variant = product.variants?.find((v: any) => v._id?.toString() === variantId);
+  const activePrice = variant?.price || product.price;
+
   cart.items.push({
     product: productId,
     variant: variantId,
     quantity,
-    price: product.price,
+    price: activePrice,
   });
 
   await cart.save();
