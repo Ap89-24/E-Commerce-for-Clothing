@@ -9,7 +9,6 @@ import { useCart } from "../../cart/hooks/useCart";
 import LightboxModal from "../components/LightboxModal";
 import SizeGuideModal from "../components/SizeGuideModal";
 import CartDrawer from "../components/CartDrawer";
-import CheckoutDrawer from "../components/CheckoutDrawer";
 import ReviewsSection from "../components/ReviewsSection";
 import ProductGallery from "../components/ProductGallery";
 import ProductDetailsInfo from "../components/ProductDetailsInfo";
@@ -181,7 +180,6 @@ const UserProductDetail = () => {
 
   // Dialogs and Drawers states
   const [cartOpen, setCartOpen] = useState(false);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImageIdx, setLightboxImageIdx] = useState(0);
@@ -193,7 +191,6 @@ const UserProductDetail = () => {
     handleGetAddToCart,
     handleUpdateCartQuantity: updateCartQuantity,
     handleRemoveFromCart: removeCartItem,
-    handleClearCart,
   } = useCart();
 
   // Reviews states (persisted locally per product)
@@ -208,26 +205,6 @@ const UserProductDetail = () => {
   // Entrance animations loaders
   const [loaderVisible, setLoaderVisible] = useState(true);
   const [loaderFadeOut, setLoaderFadeOut] = useState(false);
-
-  // Checkout shipping form & card mockup states
-  const [shippingForm, setShippingForm] = useState({
-    fullName: "",
-    address: "",
-    city: "",
-    zipCode: "",
-    contact: "",
-  });
-  const [cardDetails, setCardDetails] = useState({
-    number: "",
-    name: "",
-    expiry: "",
-    cvv: "",
-  });
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  const [formErrors, setFormErrors] = useState({});
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
-  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
-  const [buyNowItem, setBuyNowItem] = useState(null); // When buy now is clicked, contains singular purchase item
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -369,8 +346,7 @@ const UserProductDetail = () => {
       quantity: quantity,
     };
 
-    setBuyNowItem(directItem);
-    setCheckoutOpen(true);
+    navigate("/checkout", { state: { buyNowItem: directItem } });
   };
 
   // 10. Update quantity in Cart drawer
@@ -386,92 +362,8 @@ const UserProductDetail = () => {
 
   // 12. Proceed checkout from Cart
   const handleCartCheckout = () => {
-    setBuyNowItem(null); // Use cart items
     setCartOpen(false);
-    setCheckoutOpen(true);
-  };
-
-  // 13. Close Secure Checkout Drawer
-  const handleCloseCheckout = () => {
-    setCheckoutOpen(false);
-    setCheckoutSuccess(false);
-    setBuyNowItem(null);
-    setShippingForm({
-      fullName: "",
-      address: "",
-      city: "",
-      zipCode: "",
-      contact: "",
-    });
-    setCardDetails({
-      number: "",
-      name: "",
-      expiry: "",
-      cvv: "",
-    });
-    setFormErrors({});
-  };
-
-  // 14. Shipping Form Validation
-  const validateForm = () => {
-    const errors = {};
-    if (!shippingForm.fullName.trim()) errors.fullName = "Full Name is required";
-    if (!shippingForm.address.trim()) errors.address = "Street Address is required";
-    if (!shippingForm.city.trim()) errors.city = "City is required";
-    if (!shippingForm.zipCode.trim()) {
-      errors.zipCode = "ZIP Code is required";
-    } else if (!/^\d{5,6}$/.test(shippingForm.zipCode.trim())) {
-      errors.zipCode = "Enter a valid 5 or 6 digit ZIP code";
-    }
-    if (!shippingForm.contact.trim()) {
-      errors.contact = "Contact number is required";
-    } else if (!/^\+?[\d\s-]{10,13}$/.test(shippingForm.contact.trim())) {
-      errors.contact = "Enter a valid mobile contact number";
-    }
-
-    if (paymentMethod === "card") {
-      if (!cardDetails.name.trim()) errors.cardName = "Cardholder Name is required";
-      if (!cardDetails.number.trim()) {
-        errors.cardNumber = "Card Number is required";
-      } else if (!/^\d{16}$/.test(cardDetails.number.trim())) {
-        errors.cardNumber = "Enter a valid 16-digit Card Number";
-      }
-      if (!cardDetails.expiry.trim()) {
-        errors.cardExpiry = "Expiry is required";
-      } else if (!/^\d{2}\/\d{2}$/.test(cardDetails.expiry.trim())) {
-        errors.cardExpiry = "Enter expiry as MM/YY";
-      }
-      if (!cardDetails.cvv.trim()) {
-        errors.cardCvv = "CVV is required";
-      } else if (!/^\d{3}$/.test(cardDetails.cvv.trim())) {
-        errors.cardCvv = "Enter 3-digit CVV";
-      }
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  // 15. Submit Secure order simulation
-  const handlePlaceOrderSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      showToast("error", "Please correct validation errors on checkout form");
-      return;
-    }
-
-    setIsPlacingOrder(true);
-
-    setTimeout(() => {
-      setIsPlacingOrder(false);
-      setCheckoutSuccess(true);
-      showToast("success", "Purchase transaction successfully broadcasted!");
-
-      // If checkouting cart, clean the cart items
-      if (!buyNowItem) {
-        handleClearCart();
-      }
-    }, 2800);
+    navigate("/checkout");
   };
 
   // 16. Submit Review Form
@@ -516,18 +408,6 @@ const UserProductDetail = () => {
     );
   }, [cartItems]);
 
-  const checkoutItemsList = useMemo(() => {
-    if (buyNowItem) return [buyNowItem];
-    return cartItems;
-  }, [buyNowItem, cartItems]);
-
-  const checkoutTotal = useMemo(() => {
-    return checkoutItemsList.reduce(
-      (acc, item) => acc + Number(item.price?.priceAmount || 0) * item.quantity,
-      0
-    );
-  }, [checkoutItemsList]);
-
   const relatedProducts = useMemo(() => {
     if (!product || !products) return [];
     return products.filter((p) => p._id !== product._id).slice(0, 3);
@@ -538,11 +418,6 @@ const UserProductDetail = () => {
     const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
     return (sum / reviews.length).toFixed(1);
   }, [reviews]);
-
-  const formattedCardNumber = useMemo(() => {
-    if (!cardDetails.number) return "•••• •••• •••• ••••";
-    return cardDetails.number.replace(/(.{4})/g, "$1 ").trim();
-  }, [cardDetails.number]);
 
   return (
     <div className="min-h-screen bg-brand-light flex flex-col font-sans selection:bg-brand-accent selection:text-white overflow-x-hidden relative">
@@ -905,26 +780,6 @@ const UserProductDetail = () => {
         onRemoveItem={handleRemoveFromCart}
         onCheckout={handleCartCheckout}
         currentCartTotal={currentCartTotal}
-        formatPrice={formatPrice}
-      />
-
-      {/* Buy Now / Checkout Drawer Modal */}
-      <CheckoutDrawer
-        isOpen={checkoutOpen}
-        onClose={handleCloseCheckout}
-        checkoutSuccess={checkoutSuccess}
-        checkoutItemsList={checkoutItemsList}
-        checkoutTotal={checkoutTotal}
-        shippingForm={shippingForm}
-        setShippingForm={setShippingForm}
-        cardDetails={cardDetails}
-        setCardDetails={setCardDetails}
-        paymentMethod={paymentMethod}
-        setPaymentMethod={setPaymentMethod}
-        formErrors={formErrors}
-        isPlacingOrder={isPlacingOrder}
-        onSubmitOrder={handlePlaceOrderSubmit}
-        formattedCardNumber={formattedCardNumber}
         formatPrice={formatPrice}
       />
 

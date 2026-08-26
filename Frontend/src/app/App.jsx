@@ -32,6 +32,8 @@ function App() {
         orientation: "vertical",
         gestureOrientation: "vertical",
         smoothWheel: true,
+        smoothTouch: true,
+        syncTouch: true,
       });
 
       window.lenisInstance = lenis;

@@ -5,7 +5,6 @@ import { useAllProducts } from "../hooks/useAllProducts";
 import { setUser } from "../../auth/state/auth.slice";
 import { useCart } from "../../cart/hooks/useCart";
 import CartDrawer from "../components/CartDrawer";
-import CheckoutDrawer from "../components/CheckoutDrawer";
 
 const CURRENCY_SYMBOLS = {
   INR: "₹",
@@ -40,35 +39,15 @@ const Home = () => {
   const [loaderVisible, setLoaderVisible] = useState(true);
   const [loaderFadeOut, setLoaderFadeOut] = useState(false);
 
-  // Cart / Checkout state integration
+  // Cart state integration
   const [cartOpen, setCartOpen] = useState(false);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
   const {
     cartItems,
     handleUpdateCartQuantity: updateCartQuantity,
     handleRemoveFromCart: removeCartItem,
-    handleClearCart,
   } = useCart();
-
-  const [shippingForm, setShippingForm] = useState({
-    fullName: "",
-    address: "",
-    city: "",
-    zipCode: "",
-    contact: "",
-  });
-  const [cardDetails, setCardDetails] = useState({
-    number: "",
-    name: "",
-    expiry: "",
-    cvv: "",
-  });
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  const [formErrors, setFormErrors] = useState({});
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
-  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -86,82 +65,7 @@ const Home = () => {
 
   const handleCartCheckout = () => {
     setCartOpen(false);
-    setCheckoutOpen(true);
-  };
-
-  const handleCloseCheckout = () => {
-    setCheckoutOpen(false);
-    setCheckoutSuccess(false);
-    setShippingForm({
-      fullName: "",
-      address: "",
-      city: "",
-      zipCode: "",
-      contact: "",
-    });
-    setCardDetails({
-      number: "",
-      name: "",
-      expiry: "",
-      cvv: "",
-    });
-    setFormErrors({});
-  };
-
-  const validateForm = () => {
-    const errors = {};
-    if (!shippingForm.fullName.trim()) errors.fullName = "Full Name is required";
-    if (!shippingForm.address.trim()) errors.address = "Street Address is required";
-    if (!shippingForm.city.trim()) errors.city = "City is required";
-    if (!shippingForm.zipCode.trim()) {
-      errors.zipCode = "ZIP Code is required";
-    } else if (!/^\d{5,6}$/.test(shippingForm.zipCode.trim())) {
-      errors.zipCode = "Enter a valid 5 or 6 digit ZIP code";
-    }
-    if (!shippingForm.contact.trim()) {
-      errors.contact = "Contact number is required";
-    } else if (!/^\+?[\d\s-]{10,13}$/.test(shippingForm.contact.trim())) {
-      errors.contact = "Enter a valid mobile contact number";
-    }
-
-    if (paymentMethod === "card") {
-      if (!cardDetails.name.trim()) errors.cardName = "Cardholder Name is required";
-      if (!cardDetails.number.trim()) {
-        errors.cardNumber = "Card Number is required";
-      } else if (!/^\d{16}$/.test(cardDetails.number.trim())) {
-        errors.cardNumber = "Enter a valid 16-digit Card Number";
-      }
-      if (!cardDetails.expiry.trim()) {
-        errors.cardExpiry = "Expiry is required";
-      } else if (!/^\d{2}\/\d{2}$/.test(cardDetails.expiry.trim())) {
-        errors.cardExpiry = "Enter expiry as MM/YY";
-      }
-      if (!cardDetails.cvv.trim()) {
-        errors.cardCvv = "CVV is required";
-      } else if (!/^\d{3}$/.test(cardDetails.cvv.trim())) {
-        errors.cardCvv = "Enter 3-digit CVV";
-      }
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handlePlaceOrderSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      showToast("error", "Please correct validation errors on checkout form");
-      return;
-    }
-
-    setIsPlacingOrder(true);
-
-    setTimeout(() => {
-      setIsPlacingOrder(false);
-      setCheckoutSuccess(true);
-      showToast("success", "Purchase transaction successfully broadcasted!");
-      handleClearCart();
-    }, 2800);
+    navigate("/checkout");
   };
 
   const currentCartTotal = useMemo(() => {
@@ -170,11 +74,6 @@ const Home = () => {
       0
     );
   }, [cartItems]);
-
-  const formattedCardNumber = useMemo(() => {
-    if (!cardDetails.number) return "•••• •••• •••• ••••";
-    return cardDetails.number.replace(/(.{4})/g, "$1 ").trim();
-  }, [cardDetails.number]);
 
   useEffect(() => {
     handleGetProducts();
@@ -646,7 +545,10 @@ const Home = () => {
             <div className="absolute -bottom-6 -right-6 z-10 w-24 h-24 bg-brand-accent/10 rounded-full blur-xl pointer-events-none" />
           </div>
 
-          <div id="editorial-section-text" className="lg:col-span-7 order-1 lg:order-2 flex flex-col items-start text-left">
+          <div
+            id="editorial-section-text"
+            className="lg:col-span-7 order-1 lg:order-2 flex flex-col items-start text-left"
+          >
             <span className="text-[9px] tracking-[0.4em] font-bold text-brand-accent uppercase mb-2">
               THE ART OF ATELIER
             </span>
@@ -987,26 +889,6 @@ const Home = () => {
         onRemoveItem={handleRemoveFromCart}
         onCheckout={handleCartCheckout}
         currentCartTotal={currentCartTotal}
-        formatPrice={formatPrice}
-      />
-
-      {/* Buy Now / Checkout Drawer Modal */}
-      <CheckoutDrawer
-        isOpen={checkoutOpen}
-        onClose={handleCloseCheckout}
-        checkoutSuccess={checkoutSuccess}
-        checkoutItemsList={cartItems}
-        checkoutTotal={currentCartTotal}
-        shippingForm={shippingForm}
-        setShippingForm={setShippingForm}
-        cardDetails={cardDetails}
-        setCardDetails={setCardDetails}
-        paymentMethod={paymentMethod}
-        setPaymentMethod={setPaymentMethod}
-        formErrors={formErrors}
-        isPlacingOrder={isPlacingOrder}
-        onSubmitOrder={handlePlaceOrderSubmit}
-        formattedCardNumber={formattedCardNumber}
         formatPrice={formatPrice}
       />
     </div>

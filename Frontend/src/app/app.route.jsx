@@ -9,6 +9,7 @@ import ProductDetails from "../features/product/pages/ProductDetails.jsx";
 import ProtectedRoute from "../features/auth/components/ProtectedRoute.jsx";
 import Home from "../features/product/pages/Home.jsx";
 import UserProductDetail from "../features/product/pages/UserProductDetail.jsx";
+import Checkout from "../features/product/pages/Checkout.jsx";
 
 const RootLayout = () => {
   const { pathname } = useLocation();
@@ -71,6 +72,10 @@ export const routes = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+      },
+      {
+        path: "/checkout",
+        element: <Checkout />,
       },
       {
         path: "/register",
