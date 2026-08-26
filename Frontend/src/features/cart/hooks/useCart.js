@@ -18,7 +18,7 @@ export const mapBackendCartToFrontend = (backendCart) => {
 
     // Determine color and size
     const color = variantObj?.attributes?.color || variantObj?.attributes?.Color || "Default";
-    const size = variantObj?.attributes?.size || variantObj?.attributes?.Size || "M";
+    const size = variantObj?.attributes?.size || variantObj?.attributes?.Size || "";
 
     return {
       cartItemId: `${product?._id || ""}-${variantId}`,
@@ -92,7 +92,7 @@ export const useCart = () => {
           const activePrice = variantObj?.price || product.price;
           const activeImage = variantObj?.images?.[0]?.url || product.images?.[0]?.url || "";
           const color = variantObj?.attributes?.color || variantObj?.attributes?.Color || "Default";
-          const size = variantObj?.attributes?.size || variantObj?.attributes?.Size || "M";
+          const size = variantObj?.attributes?.size || variantObj?.attributes?.Size || "";
 
           const cartItemId = `${product._id}-${variantId}`;
           const existingIdx = cartItems.findIndex((item) => item.cartItemId === cartItemId);

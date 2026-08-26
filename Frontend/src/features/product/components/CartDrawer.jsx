@@ -81,8 +81,13 @@ const CartDrawer = ({
                   <div className="flex-grow min-w-0 pr-4">
                     <h5 className="text-xs font-serif text-brand-dark truncate">{item.title}</h5>
                     <p className="text-[9px] text-gray-400 mt-1 uppercase tracking-wide">
-                      Hue: <span className="text-brand-accent font-semibold">{item.color}</span> •
-                      Size: <span className="text-brand-accent font-semibold">{item.size}</span>
+                      Hue: <span className="text-brand-accent font-semibold">{item.color}</span>
+                      {item.size && (
+                        <>
+                          {" • "}
+                          Size: <span className="text-brand-accent font-semibold">{item.size}</span>
+                        </>
+                      )}
                     </p>
                     <div className="flex items-center justify-between mt-3">
                       {/* Quantity control */}

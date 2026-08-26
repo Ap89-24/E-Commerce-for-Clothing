@@ -75,9 +75,11 @@ export const routes = createBrowserRouter([
       },
       {
         path: "/checkout",
-        element: (<ProtectedRoute>
-          <Checkout />
-        </ProtectedRoute>),
+        element: (
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/register",

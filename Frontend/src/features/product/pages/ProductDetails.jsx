@@ -772,10 +772,12 @@ const ProductDetails = () => {
                                         }}
                                         className="text-[10px] font-bold text-brand-accent uppercase tracking-widest hover:underline cursor-pointer"
                                       >
-                                        {openGalleryIdx === idx ? "Hide Gallery" : "Select from Product Gallery"}
+                                        {openGalleryIdx === idx
+                                          ? "Hide Gallery"
+                                          : "Select from Product Gallery"}
                                       </button>
                                     </div>
-                                    
+
                                     {/* Horizontal list of currently assigned variant images */}
                                     <div className="flex flex-wrap gap-2.5 mb-4">
                                       {[...remainingImages, ...newFiles].map((img, imgIdx) => {
@@ -783,7 +785,10 @@ const ProductDetails = () => {
                                         if (!isSelected) return null; // ONLY show assigned images!
                                         const src = img.url || img.previewUrl;
                                         return (
-                                          <div key={imgIdx} className="relative w-12 h-12 rounded-lg overflow-hidden border border-neutral-200">
+                                          <div
+                                            key={imgIdx}
+                                            className="relative w-12 h-12 rounded-lg overflow-hidden border border-neutral-200"
+                                          >
                                             <img
                                               src={src}
                                               alt=""
@@ -794,8 +799,11 @@ const ProductDetails = () => {
                                               onClick={() => {
                                                 setVariants((prev) => {
                                                   const updated = [...prev];
-                                                  const currentIndices = updated[idx].imageIndices || [];
-                                                  updated[idx].imageIndices = currentIndices.filter((i) => i !== imgIdx);
+                                                  const currentIndices =
+                                                    updated[idx].imageIndices || [];
+                                                  updated[idx].imageIndices = currentIndices.filter(
+                                                    (i) => i !== imgIdx
+                                                  );
                                                   return updated;
                                                 });
                                               }}
@@ -807,7 +815,7 @@ const ProductDetails = () => {
                                           </div>
                                         );
                                       })}
-                                      
+
                                       {/* Upload button for this variant */}
                                       <button
                                         type="button"
@@ -820,23 +828,31 @@ const ProductDetails = () => {
                                             if (files.length > 0) {
                                               const file = files[0];
                                               if (file.size > 5 * 1024 * 1024) {
-                                                showToast("error", "File is too large. Max limit is 5MB.");
+                                                showToast(
+                                                  "error",
+                                                  "File is too large. Max limit is 5MB."
+                                                );
                                                 return;
                                               }
                                               const previewUrl = URL.createObjectURL(file);
                                               const fileObj = { file, previewUrl };
-                                              
+
                                               setNewFiles((prev) => {
                                                 const updatedFiles = [...prev, fileObj];
-                                                const newTotalIndex = remainingImages.length + updatedFiles.length - 1;
-                                                
+                                                const newTotalIndex =
+                                                  remainingImages.length + updatedFiles.length - 1;
+
                                                 setVariants((vPrev) => {
                                                   const updatedVariants = [...vPrev];
-                                                  const currentIndices = updatedVariants[idx].imageIndices || [];
-                                                  updatedVariants[idx].imageIndices = [...currentIndices, newTotalIndex];
+                                                  const currentIndices =
+                                                    updatedVariants[idx].imageIndices || [];
+                                                  updatedVariants[idx].imageIndices = [
+                                                    ...currentIndices,
+                                                    newTotalIndex,
+                                                  ];
                                                   return updatedVariants;
                                                 });
-                                                
+
                                                 return updatedFiles;
                                               });
                                             }
@@ -846,8 +862,18 @@ const ProductDetails = () => {
                                         className="w-12 h-12 rounded-lg border-2 border-dashed border-neutral-300 hover:border-brand-accent flex items-center justify-center cursor-pointer text-gray-400 hover:text-brand-accent transition-all"
                                         title="Upload new image for this variant"
                                       >
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                                        <svg
+                                          className="w-5 h-5"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2.5"
+                                            d="M12 4v16m8-8H4"
+                                          />
                                         </svg>
                                       </button>
                                     </div>
@@ -858,50 +884,62 @@ const ProductDetails = () => {
                                         <p className="text-[9px] uppercase font-bold tracking-wider text-gray-400 mb-3">
                                           Select images from Product Gallery:
                                         </p>
-                                        {([...remainingImages, ...newFiles].length === 0) ? (
-                                          <p className="text-[10px] text-gray-400 italic">No images in product gallery. Upload one using the + button.</p>
+                                        {[...remainingImages, ...newFiles].length === 0 ? (
+                                          <p className="text-[10px] text-gray-400 italic">
+                                            No images in product gallery. Upload one using the +
+                                            button.
+                                          </p>
                                         ) : (
                                           <div className="flex flex-wrap gap-2">
-                                            {[...remainingImages, ...newFiles].map((img, imgIdx) => {
-                                              const isSelected = v.imageIndices?.includes(imgIdx);
-                                              const src = img.url || img.previewUrl;
-                                              return (
-                                                <button
-                                                  key={imgIdx}
-                                                  type="button"
-                                                  onClick={() =>
-                                                    setVariants((prev) => {
-                                                      const updated = [...prev];
-                                                      const currentIndices = updated[idx].imageIndices || [];
-                                                      if (currentIndices.includes(imgIdx)) {
-                                                        updated[idx].imageIndices = currentIndices.filter((i) => i !== imgIdx);
-                                                      } else {
-                                                        updated[idx].imageIndices = [...currentIndices, imgIdx];
-                                                      }
-                                                      return updated;
-                                                    })
-                                                  }
-                                                  className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
-                                                    isSelected
-                                                      ? "border-brand-accent scale-[1.03] shadow"
-                                                      : "border-neutral-200 opacity-60 hover:opacity-100"
-                                                  }`}
-                                                >
-                                                  <img
-                                                    src={src}
-                                                    alt=""
-                                                    className="w-full h-full object-cover"
-                                                  />
-                                                  {isSelected && (
-                                                    <div className="absolute inset-0 bg-brand-accent/10 flex items-center justify-center">
-                                                      <span className="text-white bg-brand-accent rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold shadow">
-                                                        ✓
-                                                      </span>
-                                                    </div>
-                                                  )}
-                                                </button>
-                                              );
-                                            })}
+                                            {[...remainingImages, ...newFiles].map(
+                                              (img, imgIdx) => {
+                                                const isSelected = v.imageIndices?.includes(imgIdx);
+                                                const src = img.url || img.previewUrl;
+                                                return (
+                                                  <button
+                                                    key={imgIdx}
+                                                    type="button"
+                                                    onClick={() =>
+                                                      setVariants((prev) => {
+                                                        const updated = [...prev];
+                                                        const currentIndices =
+                                                          updated[idx].imageIndices || [];
+                                                        if (currentIndices.includes(imgIdx)) {
+                                                          updated[idx].imageIndices =
+                                                            currentIndices.filter(
+                                                              (i) => i !== imgIdx
+                                                            );
+                                                        } else {
+                                                          updated[idx].imageIndices = [
+                                                            ...currentIndices,
+                                                            imgIdx,
+                                                          ];
+                                                        }
+                                                        return updated;
+                                                      })
+                                                    }
+                                                    className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
+                                                      isSelected
+                                                        ? "border-brand-accent scale-[1.03] shadow"
+                                                        : "border-neutral-200 opacity-60 hover:opacity-100"
+                                                    }`}
+                                                  >
+                                                    <img
+                                                      src={src}
+                                                      alt=""
+                                                      className="w-full h-full object-cover"
+                                                    />
+                                                    {isSelected && (
+                                                      <div className="absolute inset-0 bg-brand-accent/10 flex items-center justify-center">
+                                                        <span className="text-white bg-brand-accent rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold shadow">
+                                                          ✓
+                                                        </span>
+                                                      </div>
+                                                    )}
+                                                  </button>
+                                                );
+                                              }
+                                            )}
                                           </div>
                                         )}
                                       </div>

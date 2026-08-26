@@ -885,17 +885,22 @@ const CreateProduct = () => {
                                   }}
                                   className="text-[10px] font-bold text-brand-accent uppercase tracking-widest hover:underline cursor-pointer"
                                 >
-                                  {openGalleryIdx === idx ? "Hide Gallery" : "Select from Product Gallery"}
+                                  {openGalleryIdx === idx
+                                    ? "Hide Gallery"
+                                    : "Select from Product Gallery"}
                                 </button>
                               </div>
-                              
+
                               {/* Horizontal list of currently assigned variant images */}
                               <div className="flex flex-wrap gap-2.5 mb-4">
                                 {images.map((img, imgIdx) => {
                                   const isSelected = v.imageIndices?.includes(imgIdx);
                                   if (!isSelected) return null; // ONLY show assigned images!
                                   return (
-                                    <div key={imgIdx} className="relative w-12 h-12 rounded-lg overflow-hidden border border-neutral-200">
+                                    <div
+                                      key={imgIdx}
+                                      className="relative w-12 h-12 rounded-lg overflow-hidden border border-neutral-200"
+                                    >
                                       <img
                                         src={img.previewUrl}
                                         alt=""
@@ -907,7 +912,9 @@ const CreateProduct = () => {
                                           setVariants((prev) => {
                                             const updated = [...prev];
                                             const currentIndices = updated[idx].imageIndices || [];
-                                            updated[idx].imageIndices = currentIndices.filter((i) => i !== imgIdx);
+                                            updated[idx].imageIndices = currentIndices.filter(
+                                              (i) => i !== imgIdx
+                                            );
                                             return updated;
                                           });
                                         }}
@@ -919,7 +926,7 @@ const CreateProduct = () => {
                                     </div>
                                   );
                                 })}
-                                
+
                                 {/* Upload button for this variant */}
                                 <button
                                   type="button"
@@ -944,8 +951,12 @@ const CreateProduct = () => {
 
                                           setVariants((vPrev) => {
                                             const updatedVariants = [...vPrev];
-                                            const currentIndices = updatedVariants[idx].imageIndices || [];
-                                            updatedVariants[idx].imageIndices = [...currentIndices, newTotalIndex];
+                                            const currentIndices =
+                                              updatedVariants[idx].imageIndices || [];
+                                            updatedVariants[idx].imageIndices = [
+                                              ...currentIndices,
+                                              newTotalIndex,
+                                            ];
                                             return updatedVariants;
                                           });
 
@@ -958,8 +969,18 @@ const CreateProduct = () => {
                                   className="w-12 h-12 rounded-lg border-2 border-dashed border-neutral-300 hover:border-brand-accent flex items-center justify-center cursor-pointer text-gray-400 hover:text-brand-accent transition-all"
                                   title="Upload new image for this variant"
                                 >
-                                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                                  <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="2.5"
+                                      d="M12 4v16m8-8H4"
+                                    />
                                   </svg>
                                 </button>
                               </div>
@@ -971,7 +992,9 @@ const CreateProduct = () => {
                                     Select images from Product Gallery:
                                   </p>
                                   {images.length === 0 ? (
-                                    <p className="text-[10px] text-gray-400 italic">No images in product gallery. Upload one using the + button.</p>
+                                    <p className="text-[10px] text-gray-400 italic">
+                                      No images in product gallery. Upload one using the + button.
+                                    </p>
                                   ) : (
                                     <div className="flex flex-wrap gap-2">
                                       {images.map((img, imgIdx) => {
@@ -983,11 +1006,17 @@ const CreateProduct = () => {
                                             onClick={() =>
                                               setVariants((prev) => {
                                                 const updated = [...prev];
-                                                const currentIndices = updated[idx].imageIndices || [];
+                                                const currentIndices =
+                                                  updated[idx].imageIndices || [];
                                                 if (currentIndices.includes(imgIdx)) {
-                                                  updated[idx].imageIndices = currentIndices.filter((i) => i !== imgIdx);
+                                                  updated[idx].imageIndices = currentIndices.filter(
+                                                    (i) => i !== imgIdx
+                                                  );
                                                 } else {
-                                                  updated[idx].imageIndices = [...currentIndices, imgIdx];
+                                                  updated[idx].imageIndices = [
+                                                    ...currentIndices,
+                                                    imgIdx,
+                                                  ];
                                                 }
                                                 return updated;
                                               })

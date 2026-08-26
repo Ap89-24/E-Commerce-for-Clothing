@@ -719,8 +719,13 @@ const Checkout = () => {
                             {item.title}
                           </h5>
                           <p className="text-[9px] text-gray-400 mt-1 uppercase tracking-wide">
-                            Hue: <span className="font-medium text-brand-dark">{item.color}</span> •
-                            Size: <span className="font-medium text-brand-dark">{item.size}</span>
+                            Hue: <span className="font-medium text-brand-dark">{item.color}</span>
+                            {item.size && (
+                              <>
+                                {" • "}
+                                Size: <span className="font-medium text-brand-dark">{item.size}</span>
+                              </>
+                            )}
                           </p>
                           <p className="text-[9px] text-gray-400 mt-0.5">
                             Qty:{" "}
