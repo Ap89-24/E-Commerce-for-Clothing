@@ -46,3 +46,13 @@ export const decrementCartItems = async ({ productId, variantId }) => {
     throw error;
   }
 };
+
+export const deleteCartItems = async ({ productId, variantId }) => {
+  try {
+    const response = await cartApiInstance.delete(`/${productId}/${variantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error in deleting products in the cart", error);
+    throw error;
+  }
+};

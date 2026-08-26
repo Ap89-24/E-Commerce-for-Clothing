@@ -1,7 +1,20 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setItems, setLoading, setError, incrementCartItem, decrementCartItem } from "../state/cart.slice.js";
-import { addCart, decrementCartItems, getCartItems, incrementCartItems } from "../services/cart.api.js";
+import {
+  setItems,
+  setLoading,
+  setError,
+  incrementCartItem,
+  decrementCartItem,
+  removeCartItem,
+} from "../state/cart.slice.js";
+import {
+  addCart,
+  decrementCartItems,
+  deleteCartItems,
+  getCartItems,
+  incrementCartItems,
+} from "../services/cart.api.js";
 
 // Helper mapper to convert backend cart structure to frontend unified format
 export const mapBackendCartToFrontend = (backendCart) => {
@@ -181,13 +194,54 @@ export const useCart = () => {
     [dispatch, cartItems, user]
   );
 
-  const handleRemoveFromCart = useCallback(
-    (cartItemId) => {
-      const updated = cartItems.filter((item) => item.cartItemId !== cartItemId);
-      dispatch(setItems(updated));
-      localStorage.setItem("velnox_cart", JSON.stringify(updated));
+  const handleDeleteCartItem = useCallback(
+    async ({ productId, variantId }) => {
+      try {
+        dispatch(setLoading(true));
+
+        const data = await deleteCartItems({ productId, variantId });
+
+        dispatch(removeCartItem({ productId, variantId }));
+
+        // Sync local storage as well
+        const updated = cartItems.filter(
+          (item) => item.productId !== productId || item.variantId !== variantId
+        );
+        localStorage.setItem("velnox_cart", JSON.stringify(updated));
+
+        dispatch(setError(null));
+
+        return { success: true, data };
+      } catch (error) {
+        const message = error
+          ? error.response?.data?.message || error.message
+          : "Error in removing item from the cart";
+
+        dispatch(setError(message));
+
+        return { success: false, error: message };
+      } finally {
+        dispatch(setLoading(false));
+      }
     },
     [dispatch, cartItems]
+  );
+
+  const handleRemoveFromCart = useCallback(
+    async (cartItemId) => {
+      const item = cartItems.find((i) => i.cartItemId === cartItemId);
+      if (!item) return;
+
+      if (user) {
+        await handleDeleteCartItem({ productId: item.productId, variantId: item.variantId });
+      } else {
+        // Guest user: update locally
+        const updated = cartItems.filter((i) => i.cartItemId !== cartItemId);
+        dispatch(setItems(updated));
+        localStorage.setItem("velnox_cart", JSON.stringify(updated));
+      }
+    },
+    [dispatch, cartItems, user, handleDeleteCartItem]
   );
 
   const handleClearCart = useCallback(() => {
@@ -196,46 +250,46 @@ export const useCart = () => {
   }, [dispatch]);
 
   const handleIncrementCartQuantity = useCallback(
-      async ({ productId, variantId }) => {
-        try {
-          dispatch(setLoading(true));
-          const data = await incrementCartItems(productId, variantId);
-          dispatch(incrementCartItem({ productId, variantId }));
-          dispatch(setError(null));
-          return { success: true, data };
-        } catch (error) {
-          const message = error
-            ? error.response?.data?.message || error.message
-            : "Error in incrementing products in the cart";
-          dispatch(setError(message));
-          return { success: false, error: message };
-        } finally {
-          dispatch(setLoading(false));
-        }
-      },
-      [dispatch]
+    async ({ productId, variantId }) => {
+      try {
+        dispatch(setLoading(true));
+        const data = await incrementCartItems({ productId, variantId });
+        dispatch(incrementCartItem({ productId, variantId }));
+        dispatch(setError(null));
+        return { success: true, data };
+      } catch (error) {
+        const message = error
+          ? error.response?.data?.message || error.message
+          : "Error in incrementing products in the cart";
+        dispatch(setError(message));
+        return { success: false, error: message };
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
   );
-  
- const handleDecrementCartQuantity = useCallback(
-      async ({ productId, variantId }) => {
-        try {
-          dispatch(setLoading(true));
-          const data = await decrementCartItems(productId, variantId);
-          dispatch(decrementCartItem({ productId, variantId }));
-          dispatch(setError(null));
-          return { success: true, data };
-        } catch (error) {
-          const message = error
-            ? error.response?.data?.message || error.message
-            : "Error in decrementing products in the cart";
-          dispatch(setError(message));
-          return { success: false, error: message };
-        } finally {
-          dispatch(setLoading(false));
-        }
-      },
-      [dispatch]
-    );
+
+  const handleDecrementCartQuantity = useCallback(
+    async ({ productId, variantId }) => {
+      try {
+        dispatch(setLoading(true));
+        const data = await decrementCartItems({ productId, variantId });
+        dispatch(decrementCartItem({ productId, variantId }));
+        dispatch(setError(null));
+        return { success: true, data };
+      } catch (error) {
+        const message = error
+          ? error.response?.data?.message || error.message
+          : "Error in decrementing products in the cart";
+        dispatch(setError(message));
+        return { success: false, error: message };
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
   return {
     cartItems,
     handleGetAddToCart,
@@ -244,6 +298,7 @@ export const useCart = () => {
     handleRemoveFromCart,
     handleClearCart,
     handleIncrementCartQuantity,
-    handleDecrementCartQuantity
+    handleDecrementCartQuantity,
+    handleDeleteCartItem,
   };
 };
