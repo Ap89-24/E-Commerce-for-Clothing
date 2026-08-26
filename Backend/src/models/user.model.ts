@@ -10,6 +10,8 @@ export interface IUser extends Document {
   profile: string;
   isProfileCompleted: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const userSchema = new Schema<IUser>(

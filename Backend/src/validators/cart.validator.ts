@@ -23,3 +23,28 @@ export const validateAddToCart = [
 
   validateResult,
 ];
+
+/**
+ * @description
+ * Validate the product and variant IDs provided for incrementing
+ * the quantity of an item in the authenticated user's cart.
+ */
+export const validIncrementCartItemQuantity = [
+  param("productId").isMongoId().withMessage("Invalid product Id"),
+  param("variantId").isMongoId().withMessage("Invalid variant Id"),
+
+  validateResult,
+];
+
+/**
+ * @description
+ * Validate the product and variant IDs provided for decrementing
+ * the quantity of an item in the authenticated user's cart.
+ */
+export const validDecrementCartItemQuantity = [
+  param("productId").isMongoId().withMessage("Invalid product Id"),
+
+  param("variantId").isMongoId().withMessage("Invalid variant Id"),
+
+  validateResult,
+];

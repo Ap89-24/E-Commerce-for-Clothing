@@ -13,6 +13,8 @@ interface ICart extends Document {
       priceCurrency: "INR" | "USD" | "EUR" | "JPY" | "GBP";
     };
   }[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const cartSchema = new Schema<ICart>({
@@ -25,7 +27,7 @@ const cartSchema = new Schema<ICart>({
     {
       product: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Product",
         required: true,
       },
       variant: {

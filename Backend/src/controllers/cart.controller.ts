@@ -112,3 +112,142 @@ export const getCart = async (req: Request, res: Response) => {
     cart,
   });
 };
+
+export const incrementCartItemQuantity = async (req: Request, res: Response) => {
+  const { productId, variantId } = req.params;
+
+  if (typeof productId !== "string" || typeof variantId !== "string") {
+    throw new Error("Invalid productId or variantId");
+  }
+  const product = await productModel.findOne({
+    _id: productId,
+    "variants._id": variantId,
+  });
+
+  if (!product) {
+    return res.status(404).json({
+      message: "Product or variant not found",
+      success: false,
+    });
+  }
+
+  const userId = req.currentUser?._id;
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  const cart = await cartModel.findOne({ user: userId });
+
+  if (!cart) {
+    return res.status(404).json({
+      message: "Cart not found",
+      success: false,
+    });
+  }
+  const stock = await stockOfVariant(productId, variantId);
+  if (stock === undefined) {
+    return res.status(404).json({
+      success: false,
+      message: "Variant stock information not found",
+    });
+  }
+
+  const itemQuantityInCart =
+    cart.items.find(
+      (item) => item.product.toString() === productId && item.variant?.toString() === variantId
+    )?.quantity ?? 0;
+
+  if (itemQuantityInCart + 1 > stock) {
+    return res.status(400).json({
+      message: `Only ${stock} items are left in stock. And you already have ${itemQuantityInCart} items in your cart`,
+      success: false,
+    });
+  }
+
+  await cartModel.findOneAndUpdate(
+    { user: userId, "items.product": productId, "items.variant": variantId },
+    { $inc: { "items.$.quantity": 1 } },
+    { new: true }
+  );
+
+  return res.status(200).json({
+    message: "Cart item quantity increment successfully",
+    success: true,
+  });
+};
+
+export const decrementCartItemQuantity = async (req: Request, res: Response) => {
+  const { productId, variantId } = req.params;
+
+  if (typeof productId !== "string" || typeof variantId !== "string") {
+    throw new Error("Invalid productId or variantId");
+  }
+
+  const product = await productModel.findOne({
+    _id: productId,
+    "variants._id": variantId,
+  });
+
+  if (!product) {
+    return res.status(404).json({
+      message: "Product or variant not found",
+      success: false,
+    });
+  }
+
+  const userId = req.currentUser?._id;
+
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  const cart = await cartModel.findOne({ user: userId });
+
+  if (!cart) {
+    return res.status(404).json({
+      message: "Cart not found",
+      success: false,
+    });
+  }
+
+  const cartItem = cart.items.find(
+    (item) => item.product.toString() === productId && item.variant?.toString() === variantId
+  );
+
+  if (!cartItem) {
+    return res.status(404).json({
+      message: "Product variant not found in cart",
+      success: false,
+    });
+  }
+
+  if (cartItem.quantity <= 1) {
+    return res.status(400).json({
+      message: "Cart item quantity cannot be less than 1",
+      success: false,
+    });
+  }
+
+  await cartModel.findOneAndUpdate(
+    {
+      user: userId,
+      "items.product": productId,
+      "items.variant": variantId,
+    },
+    {
+      $inc: { "items.$.quantity": -1 },
+    },
+    { new: true }
+  );
+
+  return res.status(200).json({
+    message: "Cart item quantity decremented successfully",
+    success: true,
+  });
+};
