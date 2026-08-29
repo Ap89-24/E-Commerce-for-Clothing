@@ -193,6 +193,7 @@ const UserProductDetail = () => {
     handleGetAddToCart,
     handleUpdateCartQuantity: updateCartQuantity,
     handleRemoveFromCart: removeCartItem,
+    handleAcceptPriceChange,
   } = useCart();
 
   // Reviews states (persisted locally per product)
@@ -783,6 +784,7 @@ const UserProductDetail = () => {
         onCheckout={handleCartCheckout}
         currentCartTotal={currentCartTotal}
         formatPrice={formatPrice}
+        onAcceptPriceChange={handleAcceptPriceChange}
       />
 
       {/* Lightbox Fullscreen Image Gallery Slider */}

@@ -14,7 +14,9 @@ import {
   deleteCartItems,
   getCartItems,
   incrementCartItems,
+  updateCartItemPriceApi,
 } from "../services/cart.api.js";
+import { getProductById } from "../../product/services/allProduct.api.js";
 
 // Helper mapper to convert backend cart structure to frontend unified format
 export const mapBackendCartToFrontend = (backendCart) => {
@@ -33,14 +35,33 @@ export const mapBackendCartToFrontend = (backendCart) => {
     const color = variantObj?.attributes?.color || variantObj?.attributes?.Color || "Default";
     const size = variantObj?.attributes?.size || variantObj?.attributes?.Size || "";
 
+    const currentPrice =
+      variantObj?.price && typeof variantObj.price.priceAmount === "number"
+        ? variantObj.price
+        : product?.price || { priceAmount: 0, priceCurrency: "INR" };
+
+    const originalPrice = item.price || currentPrice;
+    const price = originalPrice;
+    const newPrice = currentPrice;
+
+    const hasPriceChanged = newPrice.priceAmount !== price.priceAmount;
+    const priceDiff = newPrice.priceAmount - price.priceAmount;
+    const priceChangeType = hasPriceChanged
+      ? newPrice.priceAmount > price.priceAmount
+        ? "increase"
+        : "decrease"
+      : null;
+
     return {
       cartItemId: `${product?._id || ""}-${variantId}`,
       productId: product?._id || "",
       variantId: variantId,
       title: product?.title || "Unknown Product",
-      price: (variantObj?.price && typeof variantObj.price.priceAmount === "number")
-        ? variantObj.price
-        : (item.price || product?.price || { priceAmount: 0, priceCurrency: "INR" }),
+      price,
+      newPrice,
+      hasPriceChanged,
+      priceDiff,
+      priceChangeType,
       image: image,
       color: color,
       size: size,
@@ -67,10 +88,74 @@ export const useCart = () => {
           dispatch(setItems([]));
         }
       } else {
-        // Guest user: load from local storage
+        // Guest user: load from local storage and update current prices
         const storedCart = localStorage.getItem("velnox_cart");
         if (storedCart) {
-          dispatch(setItems(JSON.parse(storedCart)));
+          const localItems = JSON.parse(storedCart);
+          try {
+            const uniqueProductIds = [...new Set(localItems.map((item) => item.productId))];
+            const productDetailsMap = {};
+
+            await Promise.all(
+              uniqueProductIds.map(async (id) => {
+                try {
+                  const res = await getProductById(id);
+                  if (res && res.success && res.product) {
+                    productDetailsMap[id] = res.product;
+                  }
+                } catch (err) {
+                  console.error(`Failed to fetch latest details for product ${id}`, err);
+                }
+              })
+            );
+
+            const updatedItems = localItems.map((item) => {
+              const latestProduct = productDetailsMap[item.productId];
+              if (!latestProduct) {
+                return {
+                  ...item,
+                  newPrice: item.newPrice || item.price,
+                  hasPriceChanged: false,
+                  priceDiff: 0,
+                  priceChangeType: null,
+                };
+              }
+
+              const variantObj = latestProduct.variants?.find((v) => v._id === item.variantId);
+              const currentPrice =
+                variantObj?.price && typeof variantObj.price.priceAmount === "number"
+                  ? variantObj.price
+                  : latestProduct.price || { priceAmount: 0, priceCurrency: "INR" };
+
+              const originalPrice = item.originalPrice || item.price;
+              const price = originalPrice;
+              const newPrice = currentPrice;
+
+              const hasPriceChanged = newPrice.priceAmount !== price.priceAmount;
+              const priceDiff = newPrice.priceAmount - price.priceAmount;
+              const priceChangeType = hasPriceChanged
+                ? newPrice.priceAmount > price.priceAmount
+                  ? "increase"
+                  : "decrease"
+                : null;
+
+              return {
+                ...item,
+                price,
+                newPrice,
+                originalPrice,
+                hasPriceChanged,
+                priceDiff,
+                priceChangeType,
+              };
+            });
+
+            dispatch(setItems(updatedItems));
+            localStorage.setItem("velnox_cart", JSON.stringify(updatedItems));
+          } catch (e) {
+            console.error("Error syncing guest cart prices:", e);
+            dispatch(setItems(localItems));
+          }
         } else {
           dispatch(setItems([]));
         }
@@ -290,6 +375,51 @@ export const useCart = () => {
     },
     [dispatch]
   );
+
+  const handleAcceptPriceChange = useCallback(
+    async (cartItemId) => {
+      const item = cartItems.find((i) => i.cartItemId === cartItemId);
+      if (!item) return;
+
+      try {
+        dispatch(setLoading(true));
+        if (user) {
+          await updateCartItemPriceApi({ productId: item.productId, variantId: item.variantId });
+          const data = await getCartItems();
+          if (data && data.success && data.cart) {
+            const mappedItems = mapBackendCartToFrontend(data.cart);
+            dispatch(setItems(mappedItems));
+            localStorage.setItem("velnox_cart", JSON.stringify(mappedItems));
+          }
+        } else {
+          // Guest user: update locally
+          const updated = cartItems.map((i) => {
+            if (i.cartItemId === cartItemId) {
+              return {
+                ...i,
+                price: i.newPrice,
+                originalPrice: i.newPrice,
+                hasPriceChanged: false,
+                priceDiff: 0,
+                priceChangeType: null,
+              };
+            }
+            return i;
+          });
+          dispatch(setItems(updated));
+          localStorage.setItem("velnox_cart", JSON.stringify(updated));
+        }
+      } catch (error) {
+        console.error("Failed to update cart price:", error);
+        const message = error?.response?.data?.message || error.message || "Failed to update price";
+        dispatch(setError(message));
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch, cartItems, user]
+  );
+
   return {
     cartItems,
     handleGetAddToCart,
@@ -300,5 +430,6 @@ export const useCart = () => {
     handleIncrementCartQuantity,
     handleDecrementCartQuantity,
     handleDeleteCartItem,
+    handleAcceptPriceChange,
   };
 };

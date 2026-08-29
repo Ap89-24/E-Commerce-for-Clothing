@@ -56,3 +56,13 @@ export const deleteCartItems = async ({ productId, variantId }) => {
     throw error;
   }
 };
+
+export const updateCartItemPriceApi = async ({ productId, variantId }) => {
+  try {
+    const response = await cartApiInstance.patch(`/update-price/${productId}/${variantId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error in updating cart item price", error);
+    throw error;
+  }
+};

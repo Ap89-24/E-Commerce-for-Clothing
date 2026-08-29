@@ -47,6 +47,7 @@ const Home = () => {
     cartItems,
     handleUpdateCartQuantity: updateCartQuantity,
     handleRemoveFromCart: removeCartItem,
+    handleAcceptPriceChange,
   } = useCart();
 
   const showToast = (type, message) => {
@@ -890,6 +891,7 @@ const Home = () => {
         onCheckout={handleCartCheckout}
         currentCartTotal={currentCartTotal}
         formatPrice={formatPrice}
+        onAcceptPriceChange={handleAcceptPriceChange}
       />
     </div>
   );

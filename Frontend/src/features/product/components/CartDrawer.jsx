@@ -7,6 +7,7 @@ const CartDrawer = ({
   onCheckout,
   currentCartTotal,
   formatPrice,
+  onAcceptPriceChange,
 }) => {
   if (!isOpen) return null;
 
@@ -89,6 +90,29 @@ const CartDrawer = ({
                         </>
                       )}
                     </p>
+                    {item.hasPriceChanged && (
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[9px] font-semibold animate-fade-in">
+                        {item.priceChangeType === "decrease" ? (
+                          <span className="text-emerald-700 bg-emerald-50/70 px-2 py-0.5 rounded border border-emerald-100">
+                            ↓ Price dropped to{" "}
+                            {formatPrice(item.newPrice?.priceAmount, item.newPrice?.priceCurrency)}{" "}
+                            (was {formatPrice(item.price?.priceAmount, item.price?.priceCurrency)})
+                          </span>
+                        ) : (
+                          <span className="text-amber-800 bg-amber-50/70 px-2 py-0.5 rounded border border-amber-100">
+                            ↑ Price updated to{" "}
+                            {formatPrice(item.newPrice?.priceAmount, item.newPrice?.priceCurrency)}{" "}
+                            (was {formatPrice(item.price?.priceAmount, item.price?.priceCurrency)})
+                          </span>
+                        )}
+                        <button
+                          onClick={() => onAcceptPriceChange(item.cartItemId)}
+                          className="bg-brand-dark hover:bg-neutral-800 text-white text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded transition-all cursor-pointer select-none"
+                        >
+                          Update
+                        </button>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between mt-3">
                       {/* Quantity control */}
                       <div className="inline-flex items-center border border-neutral-200 bg-white rounded-lg h-7 overflow-hidden">
@@ -144,6 +168,14 @@ const CartDrawer = ({
                 Complimentary
               </span>
             </div>
+            {cartItems.some((item) => item.hasPriceChanged) && (
+              <div className="bg-amber-50/60 border border-amber-200/50 rounded-xl p-3 text-[9px] text-amber-800 font-medium flex items-start gap-2 mb-1 animate-fade-in">
+                <span className="text-xs">⚠️</span>
+                <p className="leading-normal font-sans">
+                  Some items in your bag have updated prices. Please update them to proceed.
+                </p>
+              </div>
+            )}
             <div className="h-[1px] w-full bg-neutral-100 my-1" />
             <button
               onClick={onCheckout}

@@ -26,7 +26,7 @@ const Checkout = () => {
   const navigate = useNavigate();
 
   // Load cart items from hook
-  const { cartItems, handleClearCart } = useCart();
+  const { cartItems, handleClearCart, handleAcceptPriceChange } = useCart();
 
   // Buy now item from router state (if redirected from direct checkout)
   const buyNowItem = location.state?.buyNowItem || null;
@@ -159,6 +159,11 @@ const Checkout = () => {
     e.preventDefault();
     if (!validateForm()) {
       showToast("error", "Please correct validation errors on checkout form");
+      return;
+    }
+
+    if (checkoutItems.some((item) => item.hasPriceChanged)) {
+      showToast("error", "Please update all items with price changes before placing your order.");
       return;
     }
 
@@ -645,6 +650,25 @@ const Checkout = () => {
                   )}
                 </div>
 
+                {/* Price change acknowledgment warning */}
+                {checkoutItems.some((item) => item.hasPriceChanged) && (
+                  <div className="bg-amber-50/50 border border-amber-200/60 rounded-2xl p-5 mt-6 mb-2 space-y-3.5 animate-fade-in">
+                    <div className="flex gap-2.5">
+                      <span className="text-base">⚠️</span>
+                      <div>
+                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-amber-855">
+                          Price Adjustments Required
+                        </h4>
+                        <p className="text-[10px] text-amber-800/80 leading-relaxed mt-1 font-sans">
+                          Some items in your curation have price changes since you added them to
+                          your shopping bag. You must click the <strong>Update</strong> button next
+                          to each item in the Items Details recap before settling the order.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Place order button */}
                 <button
                   type="submit"
@@ -732,6 +756,37 @@ const Checkout = () => {
                             Qty:{" "}
                             <span className="font-semibold text-brand-dark">{item.quantity}</span>
                           </p>
+                          {item.hasPriceChanged && (
+                            <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[9px] font-semibold animate-fade-in">
+                              {item.priceChangeType === "decrease" ? (
+                                <span className="text-emerald-700 bg-emerald-50/70 px-2 py-0.5 rounded border border-emerald-100">
+                                  ↓ Price dropped to{" "}
+                                  {formatPrice(
+                                    item.newPrice?.priceAmount,
+                                    item.newPrice?.priceCurrency
+                                  )}{" "}
+                                  (was{" "}
+                                  {formatPrice(item.price?.priceAmount, item.price?.priceCurrency)})
+                                </span>
+                              ) : (
+                                <span className="text-amber-800 bg-amber-50/70 px-2 py-0.5 rounded border border-amber-100">
+                                  ↑ Price updated to{" "}
+                                  {formatPrice(
+                                    item.newPrice?.priceAmount,
+                                    item.newPrice?.priceCurrency
+                                  )}{" "}
+                                  (was{" "}
+                                  {formatPrice(item.price?.priceAmount, item.price?.priceCurrency)})
+                                </span>
+                              )}
+                              <button
+                                onClick={() => handleAcceptPriceChange(item.cartItemId)}
+                                className="bg-brand-dark hover:bg-neutral-800 text-white text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded transition-all cursor-pointer select-none"
+                              >
+                                Update
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <span className="text-xs font-semibold text-brand-dark pt-1">
