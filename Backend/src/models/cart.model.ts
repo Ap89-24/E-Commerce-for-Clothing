@@ -1,8 +1,8 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { Document, model, Schema } from "mongoose";
 
 import priceSchema from "./price.schema.js";
 
-interface ICart extends Document {
+export interface ICart extends Document {
   user: mongoose.Types.ObjectId;
   items: {
     product: string;
@@ -48,4 +48,4 @@ const cartSchema = new Schema<ICart>({
   ],
 });
 
-export const cartModel = model("Cart", cartSchema);
+export const cartModel = model<ICart>("Cart", cartSchema);

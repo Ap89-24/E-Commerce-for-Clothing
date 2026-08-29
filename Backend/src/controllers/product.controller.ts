@@ -382,7 +382,7 @@ export const updateProduct = async (req: Request, res: Response) => {
           variantImages = variant.images.map((img: { url: string }) => ({ url: img.url }));
         }
 
-        return {
+        const mappedVariant: any = {
           stock: Number(variant.stock ?? 0),
           attributes: variant.attributes || {},
           price: {
@@ -391,6 +391,12 @@ export const updateProduct = async (req: Request, res: Response) => {
           },
           images: variantImages,
         };
+
+        if (variant._id) {
+          mappedVariant._id = variant._id;
+        }
+
+        return mappedVariant;
       });
     }
 

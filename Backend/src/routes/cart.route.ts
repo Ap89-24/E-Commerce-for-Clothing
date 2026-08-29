@@ -6,6 +6,7 @@ import {
   deleteCartItem,
   getCart,
   incrementCartItemQuantity,
+  updateCartItemPrice,
 } from "../controllers/cart.controller.js";
 import { isAuthenticated } from "../middleware/auth.middleware.js";
 import {
@@ -71,4 +72,12 @@ cartRouter.patch(
  */
 
 cartRouter.delete("/:productId/:variantId", isAuthenticated, validDeleteCartItem, deleteCartItem);
+
+/**
+ * @description Update cart item price to new seller price
+ * @route PATCH /api/cart/update-price/:productId/:variantId
+ * @access Private
+ */
+cartRouter.patch("/update-price/:productId/:variantId", isAuthenticated, updateCartItemPrice);
+
 export default cartRouter;

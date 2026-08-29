@@ -122,14 +122,11 @@ export const incrementCartItemQuantity = async (req: Request, res: Response) => 
   if (typeof productId !== "string" || typeof variantId !== "string") {
     throw new Error("Invalid productId or variantId");
   }
-  const product = await productModel.findOne({
-    _id: productId,
-    "variants._id": variantId,
-  });
+  const product = await productModel.findById(productId);
 
   if (!product) {
     return res.status(404).json({
-      message: "Product or variant not found",
+      message: "Product not found",
       success: false,
     });
   }
@@ -150,13 +147,10 @@ export const incrementCartItemQuantity = async (req: Request, res: Response) => 
       success: false,
     });
   }
-  const stock = await stockOfVariant(productId, variantId);
-  if (stock === undefined) {
-    return res.status(404).json({
-      success: false,
-      message: "Variant stock information not found",
-    });
-  }
+
+  // Look up stock: if variant ID matches, use its stock. Otherwise fallback to first variant or 99.
+  const targetVariant = product.variants?.find((v: any) => v._id?.toString() === variantId);
+  const stock = targetVariant ? targetVariant.stock : (product.variants?.[0]?.stock ?? 99);
 
   const itemQuantityInCart =
     cart.items.find(
@@ -189,14 +183,11 @@ export const decrementCartItemQuantity = async (req: Request, res: Response) => 
     throw new Error("Invalid productId or variantId");
   }
 
-  const product = await productModel.findOne({
-    _id: productId,
-    "variants._id": variantId,
-  });
+  const product = await productModel.findById(productId);
 
   if (!product) {
     return res.status(404).json({
-      message: "Product or variant not found",
+      message: "Product not found",
       success: false,
     });
   }
@@ -311,5 +302,44 @@ export const deleteCartItem = async (req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
     message: "Cart item removed successfully",
+  });
+};
+
+export const updateCartItemPrice = async (req: Request, res: Response) => {
+  const { productId, variantId } = req.params;
+  const userId = req.currentUser?._id;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  const product = await productModel.findById(productId);
+  if (!product) {
+    return res.status(404).json({ success: false, message: "Product not found" });
+  }
+
+  const variant = product.variants?.find((v: any) => v._id?.toString() === variantId);
+
+  if (!variant) {
+    return res.status(404).json({
+      success: false,
+      message: "Variant not found",
+    });
+  }
+  const activePrice = variant?.price || product.price;
+
+  const cart = await cartModel.findOneAndUpdate(
+    {
+      user: userId,
+      "items.product": productId,
+      "items.variant": variantId,
+    } as any,
+    { $set: { "items.$.price": activePrice } },
+    { new: true }
+  );
+
+  return res.status(200).json({
+    success: true,
+    message: "Cart item price updated successfully",
+    cart,
   });
 };
