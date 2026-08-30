@@ -20,13 +20,17 @@ import { getProductById } from "../../product/services/allProduct.api.js";
 
 // Helper mapper to convert backend cart structure to frontend unified format
 export const mapBackendCartToFrontend = (backendCart) => {
-  if (!backendCart || !backendCart.items) return [];
-  return backendCart.items.map((item) => {
+  const cartObj = Array.isArray(backendCart) ? backendCart[0] : backendCart;
+  if (!cartObj || !cartObj.items) return [];
+  return cartObj.items.map((item) => {
     const product = item.product;
     const variantId = item.variant;
 
-    // Find the variant object
-    const variantObj = product?.variants?.find((v) => v._id === variantId);
+    // Find the variant object (handle both array and unwound single object cases)
+    const variantsList = product?.variants;
+    const variantObj = Array.isArray(variantsList)
+      ? variantsList.find((v) => v._id === variantId)
+      : (variantsList && typeof variantsList === "object" ? variantsList : null);
 
     // Determine image
     const image = variantObj?.images?.[0]?.url || product?.images?.[0]?.url || "";
@@ -121,7 +125,10 @@ export const useCart = () => {
                 };
               }
 
-              const variantObj = latestProduct.variants?.find((v) => v._id === item.variantId);
+              const variantsList = latestProduct.variants;
+              const variantObj = Array.isArray(variantsList)
+                ? variantsList.find((v) => v._id === item.variantId)
+                : (variantsList && typeof variantsList === "object" ? variantsList : null);
               const currentPrice =
                 variantObj?.price && typeof variantObj.price.priceAmount === "number"
                   ? variantObj.price
