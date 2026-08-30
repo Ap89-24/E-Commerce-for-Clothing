@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
+import mongoose from "mongoose";
 
 import { stockOfVariant } from "../dao/product.dao.js";
 import { cartModel } from "../models/cart.model.js";
 import { productModel } from "../models/product.model.js";
-
 export const addToCart = async (req: Request, res: Response) => {
   const { productId, variantId } = req.params;
   const { quantity = 1 } = req.body;
@@ -103,10 +103,63 @@ export const getCart = async (req: Request, res: Response) => {
       message: "Unauthorized",
     });
   }
-  let cart = await cartModel.findOne({ user: userId }).populate("items.product");
+  let cart = await cartModel.aggregate(
+    [
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(userId._id),
+        },
+      },
+      { $unwind: { path: "$items" } },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.product",
+          foreignField: "_id",
+          as: "items.product",
+        },
+      },
+      { $unwind: { path: "$items.product" } },
+      {
+        $unwind: { path: "$items.product.variants" },
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ["$items.variant", "$items.product.variants._id"],
+          },
+        },
+      },
+      {
+        $addFields: {
+          itemPrice: {
+            price: {
+              $multiply: ["$items.quantity", "$items.product.variants.price.priceAmount"],
+            },
+            currency: "$items.product.variants.price.priceCurrency",
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          totalPrice: { $sum: "$itemPrice.price" },
+          currency: {
+            $first: "$itemPrice.currency",
+          },
+          items: { $push: "$items" },
+        },
+      },
+    ],
+    { maxTimeMS: 60000, allowDiskUse: true }
+  );
 
-  if (!cart) {
-    cart = await cartModel.create({ user: userId });
+  if (cart.length === 0) {
+    const newCart = await cartModel.create({
+      user: userId,
+    });
+
+    cart = [newCart];
   }
 
   return res.status(200).json({
