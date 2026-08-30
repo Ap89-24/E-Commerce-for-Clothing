@@ -165,7 +165,7 @@ export const getCart = async (req: Request, res: Response) => {
   return res.status(200).json({
     message: "Cart fetched successfully",
     success: true,
-    cart,
+    cart: cart[0],
   });
 };
 
