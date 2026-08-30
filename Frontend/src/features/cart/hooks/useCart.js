@@ -30,7 +30,9 @@ export const mapBackendCartToFrontend = (backendCart) => {
     const variantsList = product?.variants;
     const variantObj = Array.isArray(variantsList)
       ? variantsList.find((v) => v._id === variantId)
-      : (variantsList && typeof variantsList === "object" ? variantsList : null);
+      : variantsList && typeof variantsList === "object"
+        ? variantsList
+        : null;
 
     // Determine image
     const image = variantObj?.images?.[0]?.url || product?.images?.[0]?.url || "";
@@ -128,7 +130,9 @@ export const useCart = () => {
               const variantsList = latestProduct.variants;
               const variantObj = Array.isArray(variantsList)
                 ? variantsList.find((v) => v._id === item.variantId)
-                : (variantsList && typeof variantsList === "object" ? variantsList : null);
+                : variantsList && typeof variantsList === "object"
+                  ? variantsList
+                  : null;
               const currentPrice =
                 variantObj?.price && typeof variantObj.price.priceAmount === "number"
                   ? variantObj.price
