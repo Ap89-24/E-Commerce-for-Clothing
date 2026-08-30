@@ -12,11 +12,11 @@ npm run lint || exit 1
 echo "✨ Running Backend lint-staged..."
 npx lint-staged || exit 1
 
-# cd ..
+cd ..
 
-# echo "🎨 Running Frontend ESLint..."
-# cd Frontend || exit 1
+echo "🎨 Running Frontend Prettier..."
+cd Frontend || exit 1
 
-# npm run lint || exit 1
+npm run format || exit 1
 
-# echo "✅ Pre-commit checks passed!"
+echo "✅ Pre-commit checks passed!"
