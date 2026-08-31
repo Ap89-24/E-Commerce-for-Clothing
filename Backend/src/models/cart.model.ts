@@ -2,7 +2,7 @@ import mongoose, { Document, model, Schema } from "mongoose";
 
 import priceSchema from "./price.schema.js";
 
-export interface ICart extends Document {
+interface ICart extends Document {
   user: mongoose.Types.ObjectId;
   items: {
     product: string;
