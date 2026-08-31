@@ -3,11 +3,14 @@ import mongoose from "mongoose";
 import { cartModel } from "../models/cart.model.js";
 
 export const getCartDetails = async (userId: mongoose.Types.ObjectId) => {
+  const userObjId =
+    userId instanceof mongoose.Types.ObjectId ? userId : new mongoose.Types.ObjectId(userId as any);
+
   const cart = await cartModel.aggregate(
     [
       {
         $match: {
-          user: userId,
+          user: userObjId,
         },
       },
       { $unwind: { path: "$items" } },

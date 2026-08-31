@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   addToCart,
+  createOrderController,
   decrementCartItemQuantity,
   deleteCartItem,
   getCart,
@@ -79,5 +80,12 @@ cartRouter.delete("/:productId/:variantId", isAuthenticated, validDeleteCartItem
  * @access Private
  */
 cartRouter.patch("/update-price/:productId/:variantId", isAuthenticated, updateCartItemPrice);
+
+/**
+ * @description Create order details and save shipping address
+ * @route POST /api/cart/create-order
+ * @access Private
+ */
+cartRouter.post("/create-order", isAuthenticated, createOrderController);
 
 export default cartRouter;

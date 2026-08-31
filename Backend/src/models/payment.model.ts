@@ -17,6 +17,20 @@ interface IPayment extends Document {
   };
 
   user: mongoose.Types.ObjectId;
+  shippingAddress?: mongoose.Types.ObjectId;
+  orderItems: {
+    title: string;
+    productId: mongoose.Types.ObjectId;
+    variantId?: mongoose.Types.ObjectId;
+    images: {
+      url: string;
+    }[];
+    quantity: number;
+    price: {
+      priceAmount: number;
+      priceCurrency: "INR" | "USD" | "EUR" | "JPY" | "GBP";
+    };
+  }[];
 
   createdAt: Date;
   updatedAt: Date;
@@ -43,6 +57,20 @@ const paymentSchema = new Schema<IPayment>(
       ref: "User",
       required: true,
     },
+    shippingAddress: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ShippingAddress",
+    },
+    orderItems: [
+      {
+        title: String,
+        productId: mongoose.Schema.Types.ObjectId,
+        variantId: mongoose.Schema.Types.ObjectId,
+        images: [{ url: String }],
+        quantity: Number,
+        price: priceSchema,
+      },
+    ],
   },
   { timestamps: true }
 );

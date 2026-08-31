@@ -3,7 +3,9 @@ import type { Request, Response } from "express";
 import { getCartDetails } from "../dao/cart.dao.js";
 import { stockOfVariant } from "../dao/product.dao.js";
 import { cartModel } from "../models/cart.model.js";
+import { paymentModel } from "../models/payment.model.js";
 import { productModel } from "../models/product.model.js";
+import { shippingAddressModel } from "../models/shipping.model.js";
 import { createOrder } from "../services/payment.service.js";
 
 export const addToCart = async (req: Request, res: Response) => {
@@ -351,21 +353,117 @@ export const updateCartItemPrice = async (req: Request, res: Response) => {
 };
 
 export const createOrderController = async (req: Request, res: Response) => {
-  const userId = req.currentUser?._id;
-  if (!userId) {
-    return res.status(401).json({
+  try {
+    const userId = req.currentUser?._id;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const { shippingAddress } = req.body;
+
+    if (!shippingAddress) {
+      return res.status(400).json({
+        success: false,
+        message: "Shipping address is required",
+      });
+    }
+
+    const addressData = {
+      user: userId,
+
+      fullName: shippingAddress.fullName || "",
+
+      streetAddress: shippingAddress.streetAddress || shippingAddress.address || "",
+
+      city: shippingAddress.city || "",
+
+      postalCode: shippingAddress.postalCode || shippingAddress.zipCode || "",
+
+      mobileNumber: shippingAddress.mobileNumber || shippingAddress.contact || "",
+    };
+
+    // -----------------------------
+    // 2. Create / update address
+    // -----------------------------
+
+    let addressDoc = await shippingAddressModel.findOne({
+      user: userId,
+    });
+
+    if (addressDoc) {
+      addressDoc.fullName = addressData.fullName;
+      addressDoc.streetAddress = addressData.streetAddress;
+      addressDoc.city = addressData.city;
+      addressDoc.postalCode = addressData.postalCode;
+      addressDoc.mobileNumber = addressData.mobileNumber;
+
+      await addressDoc.save();
+    } else {
+      addressDoc = await shippingAddressModel.create(addressData);
+    }
+
+    const cart = await getCartDetails(userId);
+
+    if (!cart || cart.length === 0) {
+      return res.status(400).json({
+        message: "Cart is Empty",
+        success: false,
+      });
+    }
+
+    const cartDetails = cart[0];
+
+    const order = await createOrder({
+      amount: cartDetails.totalPrice,
+      currency: cartDetails.currency,
+    });
+
+    const payment = await paymentModel.create({
+      user: userId,
+      shippingAddress: addressDoc?._id,
+      razorpay: {
+        orderId: order.id,
+      },
+      price: {
+        priceAmount: cartDetails.totalPrice,
+        priceCurrency: cartDetails.currency,
+      },
+      orderItems: cartDetails.items.map((item: any) => ({
+        title: item.product.title,
+        productId: item.product._id,
+        variantId: item.variant?._id,
+        quantity: item.quantity,
+        images: item.product.variants?.images || item.product.images,
+        price: {
+          priceAmount:
+            item.product.variants?.price?.priceAmount || item.product.price?.priceAmount || 0,
+          priceCurrency:
+            item.product.variants?.price?.priceCurrency ||
+            item.product.price?.priceCurrency ||
+            "INR",
+        },
+      })),
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Razorpay order created successfully",
+
+      order,
+
+      payment,
+
+      shippingAddress: addressDoc,
+    });
+  } catch (error) {
+    console.error("Create order error:", error);
+
+    return res.status(500).json({
       success: false,
-      message: "Unauthorized",
+      message: "Failed to create order",
     });
   }
-  const cart = await getCartDetails(userId);
-
-  if (!cart || cart.length === 0) {
-    return res.status(400).json({
-      message: "Cart is Empty",
-      success: false,
-    });
-  }
-
-  const order = await createOrder({ amount: cart[0].totalPrice, currency: cart[0].currency });
 };
