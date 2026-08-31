@@ -66,3 +66,15 @@ export const updateCartItemPriceApi = async ({ productId, variantId }) => {
     throw error;
   }
 };
+
+export const createOrderApi = async ({ shippingAddress }) => {
+  try {
+    const response = await cartApiInstance.post("/create-order", {
+      shippingAddress,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error in creating order and saving shipping address", error);
+    throw error;
+  }
+};
