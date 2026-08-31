@@ -10,11 +10,13 @@ import {
 } from "../state/cart.slice.js";
 import {
   addCart,
+  createOrderApi,
   decrementCartItems,
   deleteCartItems,
   getCartItems,
   incrementCartItems,
   updateCartItemPriceApi,
+  verifyPaymentApi,
 } from "../services/cart.api.js";
 import { getProductById } from "../../product/services/allProduct.api.js";
 
@@ -431,6 +433,48 @@ export const useCart = () => {
     [dispatch, cartItems, user]
   );
 
+  const handleCreateOrder = useCallback(
+    async ({ shippingAddress }) => {
+      try {
+        dispatch(setLoading(true));
+        const res = await createOrderApi({ shippingAddress });
+        dispatch(setError(null));
+        return { success: true, ...res };
+      } catch (error) {
+        const message =
+          error?.response?.data?.message || error.message || "Error in creating order";
+        dispatch(setError(message));
+        return { success: false, error: message };
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
+
+  const handleVerifyOrderPayment = useCallback(
+    async ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) => {
+      try {
+        dispatch(setLoading(true));
+        const res = await verifyPaymentApi({
+          razorpay_order_id,
+          razorpay_payment_id,
+          razorpay_signature,
+        });
+        dispatch(setError(null));
+        return { success: true, ...res };
+      } catch (error) {
+        const message =
+          error?.response?.data?.message || error.message || "Error in verifying payment";
+        dispatch(setError(message));
+        return { success: false, error: message };
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
+
   return {
     cartItems,
     handleGetAddToCart,
@@ -442,5 +486,7 @@ export const useCart = () => {
     handleDecrementCartQuantity,
     handleDeleteCartItem,
     handleAcceptPriceChange,
+    handleCreateOrder,
+    handleVerifyOrderPayment,
   };
 };

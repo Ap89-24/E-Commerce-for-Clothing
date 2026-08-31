@@ -10,6 +10,7 @@ import ProtectedRoute from "../features/auth/components/ProtectedRoute.jsx";
 import Home from "../features/product/pages/Home.jsx";
 import UserProductDetail from "../features/product/pages/UserProductDetail.jsx";
 import Checkout from "../features/product/pages/Checkout.jsx";
+import OrderSuccess from "../features/product/pages/OrderSuccess.jsx";
 
 const RootLayout = () => {
   const { pathname } = useLocation();
@@ -80,6 +81,10 @@ export const routes = createBrowserRouter([
             <Checkout />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "/order-success",
+        element: <OrderSuccess />,
       },
       {
         path: "/register",

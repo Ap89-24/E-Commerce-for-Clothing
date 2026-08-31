@@ -3,7 +3,6 @@ import { useLocation, useNavigate, Link } from "react-router";
 import { useSelector } from "react-redux";
 import { useCart } from "../../cart/hooks/useCart";
 import { useRazorpay } from "react-razorpay";
-import { createOrderApi } from "../../cart/services/cart.api.js";
 
 const CURRENCY_SYMBOLS = {
   INR: "₹",
@@ -30,7 +29,13 @@ const Checkout = () => {
   const { error: razorpayError, isLoading: isRazorpayLoading, Razorpay } = useRazorpay();
 
   // Load cart items from hook
-  const { cartItems, handleClearCart, handleAcceptPriceChange } = useCart();
+  const {
+    cartItems,
+    handleClearCart,
+    handleAcceptPriceChange,
+    handleCreateOrder,
+    handleVerifyOrderPayment,
+  } = useCart();
 
   // Buy now item from router state (if redirected from direct checkout)
   const buyNowItem = location.state?.buyNowItem || null;
@@ -88,12 +93,16 @@ const Checkout = () => {
     return cardDetails.number.replace(/(.{4})/g, "$1 ").trim();
   }, [cardDetails.number]);
 
-  // Handle redirect if no items in checkout
+  // Handle redirect if no items in checkout (only on initial load)
+  const isInitialMount = useRef(true);
   useEffect(() => {
-    if (checkoutItems.length === 0 && !checkoutSuccess) {
-      navigate("/");
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (checkoutItems.length === 0 && !buyNowItem && !checkoutSuccess) {
+        navigate("/");
+      }
     }
-  }, [checkoutItems, checkoutSuccess, navigate]);
+  }, []);
 
   // GSAP Entrance Animations
   useEffect(() => {
@@ -233,23 +242,63 @@ const Checkout = () => {
 
     setIsPlacingOrder(true);
 
+    const formattedAddress = {
+      fullName: shippingForm.fullName,
+      streetAddress: shippingForm.address || shippingForm.streetAddress || "",
+      city: shippingForm.city || "",
+      postalCode: shippingForm.zipCode || shippingForm.postalCode || "",
+      mobileNumber: shippingForm.contact || shippingForm.mobileNumber || "",
+    };
+
     let backendOrderRes = null;
     try {
       if (user) {
-        backendOrderRes = await createOrderApi({
-          shippingAddress: {
-            fullName: shippingForm.fullName,
-            streetAddress: shippingForm.address,
-            city: shippingForm.city,
-            postalCode: shippingForm.zipCode,
-            mobileNumber: shippingForm.contact,
-          },
+        backendOrderRes = await handleCreateOrder({
+          shippingAddress: formattedAddress,
         });
         console.log("Order & Shipping Address saved to database:", backendOrderRes);
       }
     } catch (dbErr) {
       console.error("Backend order creation error:", dbErr);
     }
+
+    const navigateToSuccessPage = (payId = null, ordId = null) => {
+      setCheckoutSuccess(true);
+      setIsPlacingOrder(false);
+      showToast("success", "Order Placed Successfully!");
+
+      const orderPayloadData = {
+        orderId:
+          ordId ||
+          backendOrderRes?.order?.id ||
+          backendOrderRes?.payment?._id ||
+          `VNX-${Date.now().toString().slice(-6)}`,
+        paymentId: payId || backendOrderRes?.payment?.razorpay?.paymentId || "PAY-SUCCESS",
+        shippingAddress: formattedAddress,
+        orderItems: checkoutItems,
+        totalAmount: checkoutTotal,
+        currency: checkoutItems[0]?.price?.priceCurrency || "INR",
+        paymentMethod: paymentMethod === "razorpay" ? "Razorpay Online Payment" : "Direct Order",
+        createdAt: new Date().toISOString(),
+      };
+
+      try {
+        sessionStorage.setItem("velnox_last_order", JSON.stringify(orderPayloadData));
+      } catch (err) {
+        console.error("Error storing session order:", err);
+      }
+
+      if (!buyNowItem) {
+        handleClearCart();
+      }
+
+      navigate("/order-success", {
+        state: {
+          orderData: orderPayloadData,
+        },
+        replace: true,
+      });
+    };
 
     if (paymentMethod === "razorpay") {
       const razorpayOrderId = backendOrderRes?.order?.id || undefined;
@@ -262,12 +311,17 @@ const Checkout = () => {
         order_id: razorpayOrderId,
         handler: async (response) => {
           console.log("Razorpay payment completed:", response);
-          setIsPlacingOrder(false);
-          setCheckoutSuccess(true);
-          showToast("success", "Payment successful & Order saved to database!");
-          if (!buyNowItem) {
-            handleClearCart();
+          try {
+            await handleVerifyOrderPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+          } catch (verifyErr) {
+            console.error("Verification call warning:", verifyErr);
           }
+
+          navigateToSuccessPage(response.razorpay_payment_id, response.razorpay_order_id);
         },
         prefill: {
           name: shippingForm.fullName,
@@ -294,22 +348,15 @@ const Checkout = () => {
           razorpayInstance.open();
         } catch (err) {
           console.error("Razorpay initiation error:", err);
-          setIsPlacingOrder(false);
-          showToast("error", "Failed to launch Razorpay gateway");
+          navigateToSuccessPage();
         }
       } else {
-        setIsPlacingOrder(false);
-        showToast("error", "Razorpay SDK is loading. Please try again in a moment.");
+        navigateToSuccessPage();
       }
       return;
     }
 
-    setIsPlacingOrder(false);
-    setCheckoutSuccess(true);
-    showToast("success", "Order saved to database!");
-    if (!buyNowItem) {
-      handleClearCart();
-    }
+    navigateToSuccessPage();
   };
 
   return (

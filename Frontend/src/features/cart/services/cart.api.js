@@ -78,3 +78,21 @@ export const createOrderApi = async ({ shippingAddress }) => {
     throw error;
   }
 };
+
+export const verifyPaymentApi = async ({
+  razorpay_order_id,
+  razorpay_payment_id,
+  razorpay_signature,
+}) => {
+  try {
+    const response = await cartApiInstance.post("/create-order/verify", {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error in verifying payment", error);
+    throw error;
+  }
+};
