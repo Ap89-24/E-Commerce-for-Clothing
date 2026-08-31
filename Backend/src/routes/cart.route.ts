@@ -8,10 +8,12 @@ import {
   getCart,
   incrementCartItemQuantity,
   updateCartItemPrice,
+  verifyOrderController,
 } from "../controllers/cart.controller.js";
 import { isAuthenticated } from "../middleware/auth.middleware.js";
 import {
   validateAddToCart,
+  validateShippingAddress,
   validDecrementCartItemQuantity,
   validDeleteCartItem,
   validIncrementCartItemQuantity,
@@ -86,6 +88,12 @@ cartRouter.patch("/update-price/:productId/:variantId", isAuthenticated, updateC
  * @route POST /api/cart/create-order
  * @access Private
  */
-cartRouter.post("/create-order", isAuthenticated, createOrderController);
+cartRouter.post("/create-order", isAuthenticated, validateShippingAddress, createOrderController);
 
+/**
+ * @description Verify payment and order details
+ * @route POST /api/cart/create-order/verify
+ * @access Private
+ */
+cartRouter.post("/create-order/verify", isAuthenticated, verifyOrderController);
 export default cartRouter;

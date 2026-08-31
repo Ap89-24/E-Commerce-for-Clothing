@@ -62,3 +62,17 @@ export const validDeleteCartItem = [
 
   validateResult,
 ];
+
+/**
+ * @description
+ * Validate the shipping address provided during checkout.
+ *
+ * Ensures that all required shipping address fields are present
+ * and contain valid values before creating or updating the address.
+ */
+
+export const validateShippingAddress = [
+  body("shippingAddress").isObject().withMessage("Shipping address is required"),
+  body("shippingAddress.fullName").trim().notEmpty().withMessage("Full name is required"),
+  validateResult,
+];

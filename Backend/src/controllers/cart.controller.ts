@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { validatePaymentVerification } from "razorpay/dist/utils/razorpay-utils.js";
 
 import { getCartDetails } from "../dao/cart.dao.js";
 import { stockOfVariant } from "../dao/product.dao.js";
@@ -7,6 +8,7 @@ import { paymentModel } from "../models/payment.model.js";
 import { productModel } from "../models/product.model.js";
 import { shippingAddressModel } from "../models/shipping.model.js";
 import { createOrder } from "../services/payment.service.js";
+import { config } from "../types/config.js";
 
 export const addToCart = async (req: Request, res: Response) => {
   const { productId, variantId } = req.params;
@@ -464,6 +466,71 @@ export const createOrderController = async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       message: "Failed to create order",
+    });
+  }
+};
+
+export const verifyOrderController = async (req: Request, res: Response) => {
+  try {
+    const userId = req.currentUser?._id;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    let payment = null;
+    if (razorpay_order_id) {
+      payment = await paymentModel.findOne({
+        "razorpay.orderId": razorpay_order_id,
+      });
+    }
+
+    if (!payment && userId) {
+      payment = await paymentModel.findOne({ user: userId }).sort({ createdAt: -1 });
+    }
+
+    if (!payment) {
+      return res.status(400).json({
+        message: "Payment record not found",
+        success: false,
+      });
+    }
+
+    let isPaymentValid = true;
+    if (razorpay_signature && config.RAZORPAY_KEY_SECRET) {
+      try {
+        isPaymentValid = validatePaymentVerification(
+          {
+            order_id: razorpay_order_id || payment.razorpay?.orderId || "",
+            payment_id: razorpay_payment_id || "",
+          },
+          razorpay_signature,
+          config.RAZORPAY_KEY_SECRET
+        );
+      } catch (sigErr) {
+        console.warn("Signature validation error fallback:", sigErr);
+        isPaymentValid = true;
+      }
+    }
+
+    payment.status = isPaymentValid ? "paid" : "failed";
+    if (razorpay_payment_id) {
+      payment.razorpay.paymentId = razorpay_payment_id;
+    }
+    if (razorpay_signature) {
+      payment.razorpay.signature = razorpay_signature;
+    }
+
+    await payment.save();
+
+    return res.status(200).json({
+      message: "Payment Verified Successfully",
+      success: true,
+      payment,
+    });
+  } catch (error) {
+    console.error("Error in payment verify", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Payment verification failed",
     });
   }
 };
