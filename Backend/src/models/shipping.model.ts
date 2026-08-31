@@ -6,6 +6,7 @@ export interface IShippingAddress extends Document {
   city: string;
   postalCode: string;
   mobileNumber: string;
+  user: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +41,11 @@ const shippingAddressSchema = new Schema<IShippingAddress>(
       type: String,
       required: true,
       trim: true,
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
   {
