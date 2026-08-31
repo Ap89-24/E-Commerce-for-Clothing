@@ -1,9 +1,11 @@
 import type { Request, Response } from "express";
-import mongoose from "mongoose";
 
+import { getCartDetails } from "../dao/cart.dao.js";
 import { stockOfVariant } from "../dao/product.dao.js";
 import { cartModel } from "../models/cart.model.js";
 import { productModel } from "../models/product.model.js";
+import { createOrder } from "../services/payment.service.js";
+
 export const addToCart = async (req: Request, res: Response) => {
   const { productId, variantId } = req.params;
   const { quantity = 1 } = req.body;
@@ -103,56 +105,7 @@ export const getCart = async (req: Request, res: Response) => {
       message: "Unauthorized",
     });
   }
-  let cart = await cartModel.aggregate(
-    [
-      {
-        $match: {
-          user: new mongoose.Types.ObjectId(userId._id),
-        },
-      },
-      { $unwind: { path: "$items" } },
-      {
-        $lookup: {
-          from: "products",
-          localField: "items.product",
-          foreignField: "_id",
-          as: "items.product",
-        },
-      },
-      { $unwind: { path: "$items.product" } },
-      {
-        $unwind: { path: "$items.product.variants" },
-      },
-      {
-        $match: {
-          $expr: {
-            $eq: ["$items.variant", "$items.product.variants._id"],
-          },
-        },
-      },
-      {
-        $addFields: {
-          itemPrice: {
-            price: {
-              $multiply: ["$items.quantity", "$items.product.variants.price.priceAmount"],
-            },
-            currency: "$items.product.variants.price.priceCurrency",
-          },
-        },
-      },
-      {
-        $group: {
-          _id: "$_id",
-          totalPrice: { $sum: "$itemPrice.price" },
-          currency: {
-            $first: "$itemPrice.currency",
-          },
-          items: { $push: "$items" },
-        },
-      },
-    ],
-    { maxTimeMS: 60000, allowDiskUse: true }
-  );
+  let cart = await getCartDetails(userId);
 
   if (cart.length === 0) {
     const newCart = await cartModel.create({
@@ -395,4 +348,24 @@ export const updateCartItemPrice = async (req: Request, res: Response) => {
     message: "Cart item price updated successfully",
     cart,
   });
+};
+
+export const createOrderController = async (req: Request, res: Response) => {
+  const userId = req.currentUser?._id;
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+  const cart = await getCartDetails(userId);
+
+  if (!cart || cart.length === 0) {
+    return res.status(400).json({
+      message: "Cart is Empty",
+      success: false,
+    });
+  }
+
+  const order = await createOrder({ amount: cart[0].totalPrice, currency: cart[0].currency });
 };
